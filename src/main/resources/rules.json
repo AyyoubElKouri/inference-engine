@@ -1,0 +1,318 @@
+{
+  "knowledge_base": {
+    "domain": "systeme_abstrait_multiniveau",
+    "version": "1.0",
+
+    "rules": [
+
+      {
+        "id": "R1",
+        "name": "ET — opérateur =",
+        "description": "Si A et B sont vrais => G est vrai.",
+        "condition": {
+          "all": [
+            { "attribute": "A", "operator": "=", "value": true },
+            { "attribute": "B", "operator": "=", "value": true }
+          ]
+        },
+        "conclusions": [
+          { "attribute": "G", "operator": "=", "value": true }
+        ],
+        "priority": 10,
+        "confidence": 1.0,
+        "explanation": "A ET B => G   [opérateurs: all, =]"
+      },
+
+      {
+        "id": "R2",
+        "name": "OU — opérateur =",
+        "description": "Si C ou D est vrai => H est vrai.",
+        "condition": {
+          "any": [
+            { "attribute": "C", "operator": "=", "value": true },
+            { "attribute": "D", "operator": "=", "value": true }
+          ]
+        },
+        "conclusions": [
+          { "attribute": "H", "operator": "=", "value": true }
+        ],
+        "priority": 20,
+        "confidence": 0.9,
+        "explanation": "C OU D => H   [opérateurs: any, =]   — ne se déclenche PAS (C=false, D=false)"
+      },
+
+      {
+        "id": "R3",
+        "name": "ET + NON — opérateur =",
+        "description": "Si A est vrai et C n'est pas vrai => I est vrai.",
+        "condition": {
+          "all": [
+            { "attribute": "A", "operator": "=", "value": true },
+            {
+              "not": {
+                "attribute": "C", "operator": "=", "value": true
+              }
+            }
+          ]
+        },
+        "conclusions": [
+          { "attribute": "I", "operator": "=", "value": true }
+        ],
+        "priority": 30,
+        "confidence": 0.95,
+        "explanation": "A ET NON(C) => I   [opérateurs: all, not, =]"
+      },
+
+      {
+        "id": "R4",
+        "name": "Seuil strict — opérateur >",
+        "description": "Si score > 70 => high_score est vrai.",
+        "condition": {
+          "attribute": "score", "operator": ">", "value": 70
+        },
+        "conclusions": [
+          { "attribute": "high_score", "operator": "=", "value": true }
+        ],
+        "priority": 40,
+        "confidence": 1.0,
+        "explanation": "score > 70 => high_score   [opérateur: >]"
+      },
+
+      {
+        "id": "R5",
+        "name": "Seuil large — opérateur >=",
+        "description": "Si score >= 80 => score_max est vrai.",
+        "condition": {
+          "attribute": "score", "operator": ">=", "value": 80
+        },
+        "conclusions": [
+          { "attribute": "score_max", "operator": "=", "value": true }
+        ],
+        "priority": 50,
+        "confidence": 1.0,
+        "explanation": "score >= 80 => score_max   [opérateur: >=]"
+      },
+
+      {
+        "id": "R6",
+        "name": "Borne haute — opérateur <",
+        "description": "Si level_x < 5 => low_level est vrai.",
+        "condition": {
+          "attribute": "level_x", "operator": "<", "value": 5
+        },
+        "conclusions": [
+          { "attribute": "low_level", "operator": "=", "value": true }
+        ],
+        "priority": 60,
+        "confidence": 1.0,
+        "explanation": "level_x < 5 => low_level   [opérateur: <]"
+      },
+
+      {
+        "id": "R7",
+        "name": "Borne large — opérateur <=",
+        "description": "Si level_x <= 3 => level_ok est vrai.",
+        "condition": {
+          "attribute": "level_x", "operator": "<=", "value": 3
+        },
+        "conclusions": [
+          { "attribute": "level_ok", "operator": "=", "value": true }
+        ],
+        "priority": 70,
+        "confidence": 1.0,
+        "explanation": "level_x <= 3 => level_ok   [opérateur: <=]"
+      },
+
+      {
+        "id": "R8",
+        "name": "Différence — opérateur !=",
+        "description": "Si category est différent de 'beta' => not_beta est vrai.",
+        "condition": {
+          "attribute": "category", "operator": "!=", "value": "beta"
+        },
+        "conclusions": [
+          { "attribute": "not_beta", "operator": "=", "value": true }
+        ],
+        "priority": 80,
+        "confidence": 1.0,
+        "explanation": "category != 'beta' => not_beta   [opérateur: !=]"
+      },
+
+      {
+        "id": "R9",
+        "name": "XOR — exactement un vrai",
+        "description": "Si exactement l'un de B ou C est vrai => J est vrai.",
+        "condition": {
+          "xor": [
+            { "attribute": "B", "operator": "=", "value": true },
+            { "attribute": "C", "operator": "=", "value": true }
+          ]
+        },
+        "conclusions": [
+          { "attribute": "J", "operator": "=", "value": true }
+        ],
+        "priority": 90,
+        "confidence": 0.85,
+        "explanation": "XOR(B, C) => J   [opérateur: xor]   — B=true, C=false => exactement 1 => vrai"
+      },
+
+      {
+        "id": "R10",
+        "name": "NIVEAU 2 — ET sur faits déduits",
+        "description": "Si G et I sont vrais => P est vrai.",
+        "condition": {
+          "all": [
+            { "attribute": "G", "operator": "=", "value": true },
+            { "attribute": "I", "operator": "=", "value": true }
+          ]
+        },
+        "conclusions": [
+          { "attribute": "P", "operator": "=", "value": true }
+        ],
+        "priority": 100,
+        "confidence": 1.0,
+        "explanation": "G ET I => P   [niveau 2: utilise des faits déduits en niveau 1]"
+      },
+
+      {
+        "id": "R11",
+        "name": "NIVEAU 2 — AT_LEAST sur faits déduits",
+        "description": "Si au moins 2 parmi {G, high_score, low_level, J} sont vrais => Q est vrai.",
+        "condition": {
+          "at_least": 2,
+          "of": [
+            { "attribute": "G",          "operator": "=", "value": true },
+            { "attribute": "high_score", "operator": "=", "value": true },
+            { "attribute": "low_level",  "operator": "=", "value": true },
+            { "attribute": "J",          "operator": "=", "value": true }
+          ]
+        },
+        "conclusions": [
+          { "attribute": "Q", "operator": "=", "value": true }
+        ],
+        "priority": 110,
+        "confidence": 0.9,
+        "explanation": "AT_LEAST(2, G, high_score, low_level, J) => Q   [opérateur: at_least]"
+      },
+
+      {
+        "id": "R12",
+        "name": "NIVEAU 2 — AT_MOST (vérification d'absence)",
+        "description": "Si au plus 1 parmi {C, H, D} est vrai => R_sym est vrai.",
+        "condition": {
+          "at_most": 1,
+          "of": [
+            { "attribute": "C", "operator": "=", "value": true },
+            { "attribute": "H", "operator": "=", "value": true },
+            { "attribute": "D", "operator": "=", "value": true }
+          ]
+        },
+        "conclusions": [
+          { "attribute": "R_sym", "operator": "=", "value": true }
+        ],
+        "priority": 120,
+        "confidence": 0.8,
+        "explanation": "AT_MOST(1, C, H, D) => R_sym   [opérateur: at_most]   — 0 parmi 3 => 0 <= 1 => vrai"
+      },
+
+      {
+        "id": "R13",
+        "name": "NIVEAU 2 — EXACTLY",
+        "description": "Si exactement 2 parmi {G, high_score, C, H} sont vrais => S est vrai.",
+        "condition": {
+          "exactly": 2,
+          "of": [
+            { "attribute": "G",          "operator": "=", "value": true },
+            { "attribute": "high_score", "operator": "=", "value": true },
+            { "attribute": "C",          "operator": "=", "value": true },
+            { "attribute": "H",          "operator": "=", "value": true }
+          ]
+        },
+        "conclusions": [
+          { "attribute": "S", "operator": "=", "value": true }
+        ],
+        "priority": 130,
+        "confidence": 0.85,
+        "explanation": "EXACTLY(2, G, high_score, C, H) => S   [opérateur: exactly]   — G=true, high_score=true, C=false, H=false => 2 == 2 => vrai"
+      },
+
+      {
+        "id": "R14",
+        "name": "NIVEAU 3 — ET sur faits de niveau 2",
+        "description": "Si P et Q sont vrais => T est vrai.",
+        "condition": {
+          "all": [
+            { "attribute": "P", "operator": "=", "value": true },
+            { "attribute": "Q", "operator": "=", "value": true }
+          ]
+        },
+        "conclusions": [
+          { "attribute": "T", "operator": "=", "value": true }
+        ],
+        "priority": 140,
+        "confidence": 1.0,
+        "explanation": "P ET Q => T   [niveau 3]"
+      },
+
+      {
+        "id": "R15",
+        "name": "NIVEAU 3 — OU sur faits de niveau 2",
+        "description": "Si R_sym ou S est vrai => U est vrai.",
+        "condition": {
+          "any": [
+            { "attribute": "R_sym", "operator": "=", "value": true },
+            { "attribute": "S",     "operator": "=", "value": true }
+          ]
+        },
+        "conclusions": [
+          { "attribute": "U", "operator": "=", "value": true }
+        ],
+        "priority": 150,
+        "confidence": 0.95,
+        "explanation": "R_sym OU S => U   [niveau 3]"
+      },
+
+      {
+        "id": "R16",
+        "name": "NIVEAU 3 — ET + NON sur faits déduits",
+        "description": "Si T est vrai et H ne l'est pas => V est vrai.",
+        "condition": {
+          "all": [
+            { "attribute": "T", "operator": "=", "value": true },
+            {
+              "not": {
+                "attribute": "H", "operator": "=", "value": true
+              }
+            }
+          ]
+        },
+        "conclusions": [
+          { "attribute": "V", "operator": "=", "value": true }
+        ],
+        "priority": 160,
+        "confidence": 0.9,
+        "explanation": "T ET NON(H) => V   [niveau 3: not sur un fait jamais déduit => vrai]"
+      },
+
+      {
+        "id": "R17",
+        "name": "NIVEAU 4 — Conclusion finale",
+        "description": "Si T, U et V sont vrais => FINAL est vrai.",
+        "condition": {
+          "all": [
+            { "attribute": "T", "operator": "=", "value": true },
+            { "attribute": "U", "operator": "=", "value": true },
+            { "attribute": "V", "operator": "=", "value": true }
+          ] 
+        },
+        "conclusions": [
+          { "attribute": "FINAL", "operator": "=", "value": true }
+        ],
+        "priority": 170,
+        "confidence": 1.0,
+        "explanation": "T ET U ET V => FINAL   [niveau 4: conclusion terminale]"
+      }
+
+    ]
+  }
+}

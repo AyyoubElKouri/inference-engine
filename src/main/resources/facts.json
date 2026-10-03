@@ -1,0 +1,65 @@
+[
+  {
+    "id": "F1",
+    "attribute": "A",
+    "operator": "=",
+    "value": true,
+    "confidence": 1.0,
+    "derived_by": null,
+    "level": 0
+  },
+  {
+    "id": "F2",
+    "attribute": "B",
+    "operator": "=",
+    "value": true,
+    "confidence": 1.0,
+    "derived_by": null,
+    "level": 0
+  },
+  {
+    "id": "F3",
+    "attribute": "C",
+    "operator": "=",
+    "value": false,
+    "confidence": 1.0,
+    "derived_by": null,
+    "level": 0
+  },
+  {
+    "id": "F4",
+    "attribute": "D",
+    "operator": "=",
+    "value": false,
+    "confidence": 1.0,
+    "derived_by": null,
+    "level": 0
+  },
+  {
+    "id": "F5",
+    "attribute": "score",
+    "operator": "=",
+    "value": 80,
+    "confidence": 1.0,
+    "derived_by": null,
+    "level": 0
+  },
+  {
+    "id": "F6",
+    "attribute": "level_x",
+    "operator": "=",
+    "value": 3,
+    "confidence": 1.0,
+    "derived_by": null,
+    "level": 0
+  },
+  {
+    "id": "F7",
+    "attribute": "category",
+    "operator": "=",
+    "value": "alpha",
+    "confidence": 1.0,
+    "derived_by": null,
+    "level": 0
+  }
+]
