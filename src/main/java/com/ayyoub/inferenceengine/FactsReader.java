@@ -10,12 +10,14 @@ import java.util.List;
 public class FactsReader {
 
   /**
-   * Read initial facts from a JSON array file. Value type is inferred from the JSON node type
-   * (boolean, int, double, string).
+   * Read initial facts from a JSON array file. Value type is inferred from the
+   * JSON node type (boolean, int, double, string).
    *
-   * @param filePath Path to facts.json
+   * @param filePath
+   *          Path to facts.json
    * @return List of Fact objects with typed values
-   * @throws IOException if the file cannot be read
+   * @throws IOException
+   *           if the file cannot be read
    */
   public static List<Fact> readFacts(String filePath) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
@@ -34,11 +36,16 @@ public class FactsReader {
       JsonNode valueNode = node.path("value");
       Object value;
 
-      if (valueNode.isBoolean()) value = valueNode.asBoolean();
-      else if (valueNode.isInt()) value = valueNode.asInt();
-      else if (valueNode.isLong()) value = (int) valueNode.asLong();
-      else if (valueNode.isDouble() || valueNode.isFloat()) value = valueNode.asDouble();
-      else value = valueNode.asText();
+      if (valueNode.isBoolean())
+        value = valueNode.asBoolean();
+      else if (valueNode.isInt())
+        value = valueNode.asInt();
+      else if (valueNode.isLong())
+        value = (int) valueNode.asLong();
+      else if (valueNode.isDouble() || valueNode.isFloat())
+        value = valueNode.asDouble();
+      else
+        value = valueNode.asText();
 
       facts.add(new Fact(id, attribute, operator, value, confidence, derivedBy, level));
     }

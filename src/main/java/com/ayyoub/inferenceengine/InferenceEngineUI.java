@@ -23,12 +23,14 @@ import javafx.util.Duration;
 /**
  * Two-page inference engine UI.
  *
- * <p>Page 1 — Fact Builder : left panel = catalogue of available attributes (from facts.json),
- * right panel = facts the user has added + their typed inputs. Nothing is pre-added; the user
- * builds their set.
+ * <p>
+ * Page 1 — Fact Builder : left panel = catalogue of available attributes (from
+ * facts.json), right panel = facts the user has added + their typed inputs.
+ * Nothing is pre-added; the user builds their set.
  *
- * <p>Page 2 — Trace View : full forward-chaining trace grouped by level, with a stats bar and a
- * back button.
+ * <p>
+ * Page 2 — Trace View : full forward-chaining trace grouped by level, with a
+ * stats bar and a back button.
  */
 public class InferenceEngineUI extends Application {
 
@@ -49,9 +51,7 @@ public class InferenceEngineUI extends Application {
   private static final String DANGER_TL = "#FEF2F2";
   private static final String DANGER = "#DC2626";
 
-  private static final String[] LEVEL_ACCENT = {
-    "#6B7280", "#1B4FD8", "#0891B2", "#059669", "#7C3AED", "#DB2777"
-  };
+  private static final String[] LEVEL_ACCENT = {"#6B7280", "#1B4FD8", "#0891B2", "#059669", "#7C3AED", "#DB2777"};
 
   // ── State ─────────────────────────────────────────────────────────────────
 
@@ -64,8 +64,8 @@ public class InferenceEngineUI extends Application {
   private List<Fact> catalogue;
 
   /**
-   * Facts the user has chosen to add, keyed by attribute name. Insertion order is preserved for
-   * display.
+   * Facts the user has chosen to add, keyed by attribute name. Insertion order is
+   * preserved for display.
    */
   private final LinkedHashMap<String, Fact> addedFacts = new LinkedHashMap<>();
 
@@ -110,7 +110,7 @@ public class InferenceEngineUI extends Application {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  //  PAGE 1 — Fact Builder
+  // PAGE 1 — Fact Builder
   // ═══════════════════════════════════════════════════════════════════════════
 
   private void showInputPage() {
@@ -129,14 +129,8 @@ public class InferenceEngineUI extends Application {
     leftPanel.setPrefWidth(300);
     leftPanel.setMinWidth(260);
     leftPanel.setMaxWidth(340);
-    leftPanel.setStyle(
-        "-fx-background-color: "
-            + SURFACE
-            + ";"
-            + "-fx-border-color: transparent "
-            + BORDER
-            + " transparent transparent;"
-            + "-fx-border-width: 0 1 0 0;");
+    leftPanel.setStyle("-fx-background-color: " + SURFACE + ";" + "-fx-border-color: transparent " + BORDER + " transparent transparent;"
+        + "-fx-border-width: 0 1 0 0;");
 
     // ── Right panel: added facts ──────────────────────────────────────────
     VBox rightPanel = buildAddedPanel();
@@ -157,11 +151,7 @@ public class InferenceEngineUI extends Application {
     // Panel header
     VBox header = new VBox(4);
     header.setPadding(new Insets(24, 20, 16, 20));
-    header.setStyle(
-        "-fx-border-color: transparent transparent "
-            + BORDER
-            + " transparent;"
-            + "-fx-border-width: 0 0 1 0;");
+    header.setStyle("-fx-border-color: transparent transparent " + BORDER + " transparent;" + "-fx-border-width: 0 0 1 0;");
     Label title = new Label("Catalogue");
     title.setFont(Font.font("System", FontWeight.BOLD, 13));
     title.setTextFill(Color.web(TXT1));
@@ -200,8 +190,7 @@ public class InferenceEngineUI extends Application {
     HBox row = new HBox(10);
     row.setPadding(new Insets(9, 12, 9, 12));
     row.setAlignment(Pos.CENTER_LEFT);
-    row.setStyle(
-        "-fx-background-color: transparent;" + "-fx-background-radius: 8;" + "-fx-cursor: hand;");
+    row.setStyle("-fx-background-color: transparent;" + "-fx-background-radius: 8;" + "-fx-cursor: hand;");
 
     Label attrLbl = new Label(tmpl.getAttribute());
     attrLbl.setFont(Font.font("System", FontWeight.BOLD, 12));
@@ -219,21 +208,14 @@ public class InferenceEngineUI extends Application {
 
     row.getChildren().addAll(attrLbl, badge, addIcon);
 
-    row.setOnMouseEntered(
-        e -> {
-          row.setStyle(
-              "-fx-background-color: "
-                  + PRIMARY_TL
-                  + ";"
-                  + "-fx-background-radius: 8; -fx-cursor: hand;");
-          addIcon.setVisible(true);
-        });
-    row.setOnMouseExited(
-        e -> {
-          row.setStyle(
-              "-fx-background-color: transparent;" + "-fx-background-radius: 8; -fx-cursor: hand;");
-          addIcon.setVisible(false);
-        });
+    row.setOnMouseEntered(e -> {
+      row.setStyle("-fx-background-color: " + PRIMARY_TL + ";" + "-fx-background-radius: 8; -fx-cursor: hand;");
+      addIcon.setVisible(true);
+    });
+    row.setOnMouseExited(e -> {
+      row.setStyle("-fx-background-color: transparent;" + "-fx-background-radius: 8; -fx-cursor: hand;");
+      addIcon.setVisible(false);
+    });
 
     row.setOnMouseClicked(e -> addFactFromCatalogue(tmpl, row));
     return row;
@@ -248,13 +230,7 @@ public class InferenceEngineUI extends Application {
     VBox header = new VBox(4);
     header.setPadding(new Insets(24, 24, 16, 24));
     header.setStyle(
-        "-fx-background-color: "
-            + BG
-            + ";"
-            + "-fx-border-color: transparent transparent "
-            + BORDER
-            + " transparent;"
-            + "-fx-border-width: 0 0 1 0;");
+        "-fx-background-color: " + BG + ";" + "-fx-border-color: transparent transparent " + BORDER + " transparent;" + "-fx-border-width: 0 0 1 0;");
     Label title = new Label("Faits sélectionnés");
     title.setFont(Font.font("System", FontWeight.BOLD, 13));
     title.setTextFill(Color.web(TXT1));
@@ -287,15 +263,12 @@ public class InferenceEngineUI extends Application {
         if (attr.equals(n.getUserData())) {
           String orig = n.getStyle();
           n.setStyle(orig.replace(SURFACE, "#FEF9C3"));
-          new java.util.Timer()
-              .schedule(
-                  new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                      javafx.application.Platform.runLater(() -> n.setStyle(orig));
-                    }
-                  },
-                  600);
+          new java.util.Timer().schedule(new java.util.TimerTask() {
+            @Override
+            public void run() {
+              javafx.application.Platform.runLater(() -> n.setStyle(orig));
+            }
+          }, 600);
         }
       }
       return;
@@ -305,9 +278,7 @@ public class InferenceEngineUI extends Application {
     userInputs.put(attr, tmpl.getValue());
 
     // Dim catalogue row → shows it's already in use
-    catalogueRow.setStyle(
-        "-fx-background-color: transparent; -fx-background-radius: 8;"
-            + "-fx-opacity: 0.4; -fx-cursor: default;");
+    catalogueRow.setStyle("-fx-background-color: transparent; -fx-background-radius: 8;" + "-fx-opacity: 0.4; -fx-cursor: default;");
     catalogueRow.setMouseTransparent(true);
 
     addedList.getChildren().add(buildAddedRow(tmpl, catalogueRow));
@@ -321,9 +292,7 @@ public class InferenceEngineUI extends Application {
 
     // Re-enable the catalogue row
     if (catalogueRow != null) {
-      catalogueRow.setStyle(
-          "-fx-background-color: transparent; -fx-background-radius: 8;"
-              + "-fx-opacity: 1.0; -fx-cursor: hand;");
+      catalogueRow.setStyle("-fx-background-color: transparent; -fx-background-radius: 8;" + "-fx-opacity: 1.0; -fx-cursor: hand;");
       catalogueRow.setMouseTransparent(false);
     }
     refreshRightHint();
@@ -332,10 +301,9 @@ public class InferenceEngineUI extends Application {
   private void refreshRightHint() {
     int n = addedFacts.size();
     rightHint.setText(
-        n == 0
-            ? "Aucun fait ajouté — sélectionnez dans le catalogue"
-            : n + " fait" + (n > 1 ? "s" : "") + " sélectionné" + (n > 1 ? "s" : ""));
-    if (runBtn != null) runBtn.setDisable(n == 0);
+        n == 0 ? "Aucun fait ajouté — sélectionnez dans le catalogue" : n + " fait" + (n > 1 ? "s" : "") + " sélectionné" + (n > 1 ? "s" : ""));
+    if (runBtn != null)
+      runBtn.setDisable(n == 0);
   }
 
   // ── Added-fact row ────────────────────────────────────────────────────────
@@ -344,13 +312,7 @@ public class InferenceEngineUI extends Application {
     HBox card = new HBox();
     card.setUserData(tmpl.getAttribute());
     card.setStyle(
-        "-fx-background-color: "
-            + SURFACE
-            + ";"
-            + "-fx-border-color: "
-            + BORDER
-            + ";"
-            + "-fx-border-radius: 10; -fx-background-radius: 10;");
+        "-fx-background-color: " + SURFACE + ";" + "-fx-border-color: " + BORDER + ";" + "-fx-border-radius: 10; -fx-background-radius: 10;");
 
     Region strip = new Region();
     strip.setPrefWidth(4);
@@ -373,18 +335,10 @@ public class InferenceEngineUI extends Application {
 
     Button removeBtn = new Button("✕");
     removeBtn.setFont(Font.font("System", FontWeight.BOLD, 11));
-    String rmBase =
-        "-fx-background-color: transparent; -fx-text-fill: "
-            + TXT3
-            + ";"
-            + "-fx-padding: 2 6; -fx-cursor: hand; -fx-background-radius: 5;";
-    String rmHover =
-        "-fx-background-color: "
-            + DANGER_TL
-            + "; -fx-text-fill: "
-            + DANGER
-            + ";"
-            + "-fx-padding: 2 6; -fx-cursor: hand; -fx-background-radius: 5;";
+    String rmBase = "-fx-background-color: transparent; -fx-text-fill: " + TXT3 + ";"
+        + "-fx-padding: 2 6; -fx-cursor: hand; -fx-background-radius: 5;";
+    String rmHover = "-fx-background-color: " + DANGER_TL + "; -fx-text-fill: " + DANGER + ";"
+        + "-fx-padding: 2 6; -fx-cursor: hand; -fx-background-radius: 5;";
     removeBtn.setStyle(rmBase);
     removeBtn.setOnMouseEntered(e -> removeBtn.setStyle(rmHover));
     removeBtn.setOnMouseExited(e -> removeBtn.setStyle(rmBase));
@@ -402,9 +356,12 @@ public class InferenceEngineUI extends Application {
   private Node buildInput(Fact fact) {
     Object value = fact.getValue();
     String attr = fact.getAttribute();
-    if (value instanceof Boolean) return buildBooleanToggle(attr, (Boolean) value);
-    if (value instanceof Integer) return buildIntegerSpinner(attr, (Integer) value);
-    if (value instanceof Double) return buildDoubleField(attr, (Double) value);
+    if (value instanceof Boolean)
+      return buildBooleanToggle(attr, (Boolean) value);
+    if (value instanceof Integer)
+      return buildIntegerSpinner(attr, (Integer) value);
+    if (value instanceof Double)
+      return buildDoubleField(attr, (Double) value);
     return buildTextField(attr, value != null ? value.toString() : "");
   }
 
@@ -436,12 +393,11 @@ public class InferenceEngineUI extends Application {
     applySwitchState(track, knob, trackW, knobD, padding, state[0], false);
 
     // Clic → bascule avec animation
-    switchPane.setOnMouseClicked(
-        e -> {
-          state[0] = !state[0];
-          userInputs.put(attr, state[0]);
-          applySwitchState(track, knob, trackW, knobD, padding, state[0], true);
-        });
+    switchPane.setOnMouseClicked(e -> {
+      state[0] = !state[0];
+      userInputs.put(attr, state[0]);
+      applySwitchState(track, knob, trackW, knobD, padding, state[0], true);
+    });
 
     HBox row = new HBox(10, label("Non", 12, TXT2), switchPane, label("Oui", 12, TXT2));
     row.setAlignment(Pos.CENTER_LEFT);
@@ -450,19 +406,11 @@ public class InferenceEngineUI extends Application {
   }
 
   /**
-   * Applique couleur + position du knob. animate=true → slide avec TranslateTransition, false →
-   * instantané.
+   * Applique couleur + position du knob. animate=true → slide avec
+   * TranslateTransition, false → instantané.
    */
-  private void applySwitchState(
-      Rectangle track,
-      Circle knob,
-      double trackW,
-      double knobD,
-      double padding,
-      boolean on,
-      boolean animate) {
-    double targetX =
-        on ? (trackW / 2) - (knobD / 2) - padding : -(trackW / 2) + (knobD / 2) + padding;
+  private void applySwitchState(Rectangle track, Circle knob, double trackW, double knobD, double padding, boolean on, boolean animate) {
+    double targetX = on ? (trackW / 2) - (knobD / 2) - padding : -(trackW / 2) + (knobD / 2) + padding;
 
     track.setFill(on ? Color.web(PRIMARY) : Color.web(BORDER_DARK));
 
@@ -483,11 +431,10 @@ public class InferenceEngineUI extends Application {
     sp.setEditable(true);
     sp.setMaxWidth(Double.MAX_VALUE);
     sp.setStyle(inputStyle());
-    sp.valueProperty()
-        .addListener(
-            (obs, o, n) -> {
-              if (n != null) userInputs.put(attr, n);
-            });
+    sp.valueProperty().addListener((obs, o, n) -> {
+      if (n != null)
+        userInputs.put(attr, n);
+    });
     return sp;
   }
 
@@ -497,14 +444,12 @@ public class InferenceEngineUI extends Application {
     userInputs.put(attr, initial);
     TextField tf = new TextField(String.valueOf(initial));
     tf.setStyle(inputStyle());
-    tf.textProperty()
-        .addListener(
-            (obs, o, n) -> {
-              try {
-                userInputs.put(attr, Double.parseDouble(n));
-              } catch (NumberFormatException ignored) {
-              }
-            });
+    tf.textProperty().addListener((obs, o, n) -> {
+      try {
+        userInputs.put(attr, Double.parseDouble(n));
+      } catch (NumberFormatException ignored) {
+      }
+    });
     return tf;
   }
 
@@ -514,32 +459,32 @@ public class InferenceEngineUI extends Application {
     userInputs.put(attr, initial);
 
     // Collecter toutes les valeurs possibles pour cet attribut :
-    //   a) la valeur initiale du catalogue
-    //   b) les conclusions des règles qui touchent cet attribut
+    // a) la valeur initiale du catalogue
+    // b) les conclusions des règles qui touchent cet attribut
     Set<String> options = new LinkedHashSet<>();
-    if (initial != null && !initial.isBlank()) options.add(initial);
+    if (initial != null && !initial.isBlank())
+      options.add(initial);
 
     for (Rule rule : knowledgeBase.getRules()) {
       for (Map<String, Object> conc : rule.getConclusions()) {
         if (attr.equals(conc.get("attribute"))) {
           Object v = conc.get("value");
-          if (v instanceof String s && !s.isBlank()) options.add(s);
+          if (v instanceof String s && !s.isBlank())
+            options.add(s);
         }
       }
     }
 
     if (options.size() > 1) {
       // Plusieurs valeurs possibles → ComboBox
-      ComboBox<String> cb =
-          new ComboBox<>(FXCollections.observableArrayList(new ArrayList<>(options)));
+      ComboBox<String> cb = new ComboBox<>(FXCollections.observableArrayList(new ArrayList<>(options)));
       cb.setValue(initial);
       cb.setMaxWidth(Double.MAX_VALUE);
       cb.setStyle(comboStyle());
-      cb.valueProperty()
-          .addListener(
-              (obs, o, n) -> {
-                if (n != null) userInputs.put(attr, n);
-              });
+      cb.valueProperty().addListener((obs, o, n) -> {
+        if (n != null)
+          userInputs.put(attr, n);
+      });
       return cb;
     }
 
@@ -553,26 +498,13 @@ public class InferenceEngineUI extends Application {
   // ── Styles des champs ─────────────────────────────────────────────────────
 
   private String inputStyle() {
-    return "-fx-background-color: "
-        + BG
-        + ";"
-        + "-fx-border-color: "
-        + BORDER_DARK
-        + ";"
-        + "-fx-border-radius: 7; -fx-background-radius: 7;"
+    return "-fx-background-color: " + BG + ";" + "-fx-border-color: " + BORDER_DARK + ";" + "-fx-border-radius: 7; -fx-background-radius: 7;"
         + "-fx-padding: 7 11; -fx-font-size: 13;";
   }
 
   private String comboStyle() {
-    return "-fx-background-color: "
-        + BG
-        + ";"
-        + "-fx-border-color: "
-        + BORDER_DARK
-        + ";"
-        + "-fx-border-radius: 7; -fx-background-radius: 7;"
-        + "-fx-padding: 3 6; -fx-font-size: 13;"
-        + "-fx-cursor: hand;";
+    return "-fx-background-color: " + BG + ";" + "-fx-border-color: " + BORDER_DARK + ";" + "-fx-border-radius: 7; -fx-background-radius: 7;"
+        + "-fx-padding: 3 6; -fx-font-size: 13;" + "-fx-cursor: hand;";
   }
 
   // ── Footer ────────────────────────────────────────────────────────────────
@@ -581,14 +513,8 @@ public class InferenceEngineUI extends Application {
     HBox footer = new HBox();
     footer.setPadding(new Insets(13, 32, 13, 32));
     footer.setAlignment(Pos.CENTER_LEFT);
-    footer.setStyle(
-        "-fx-background-color: "
-            + SURFACE
-            + ";"
-            + "-fx-border-color: "
-            + BORDER
-            + " transparent transparent transparent;"
-            + "-fx-border-width: 1 0 0 0;");
+    footer.setStyle("-fx-background-color: " + SURFACE + ";" + "-fx-border-color: " + BORDER + " transparent transparent transparent;"
+        + "-fx-border-width: 1 0 0 0;");
     Label hint = label(catalogue.size() + " attribut(s) disponibles dans facts.json", 12, TXT3);
     HBox.setHgrow(hint, Priority.ALWAYS);
     runBtn = primaryButton("Lancer le raisonnement  →");
@@ -599,7 +525,7 @@ public class InferenceEngineUI extends Application {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  //  Inference run
+  // Inference run
   // ═══════════════════════════════════════════════════════════════════════════
 
   private void runAndNavigate() {
@@ -615,7 +541,7 @@ public class InferenceEngineUI extends Application {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  //  PAGE 2 — Reasoning Trace
+  // PAGE 2 — Reasoning Trace
   // ═══════════════════════════════════════════════════════════════════════════
 
   private void showResultsPage(List<Fact> allFacts) {
@@ -636,16 +562,13 @@ public class InferenceEngineUI extends Application {
     page.getChildren().add(buildStatsBar(allFacts));
 
     Map<Integer, List<Fact>> byLevel = new TreeMap<>();
-    for (Fact f : allFacts) byLevel.computeIfAbsent(f.getLevel(), k -> new ArrayList<>()).add(f);
+    for (Fact f : allFacts)
+      byLevel.computeIfAbsent(f.getLevel(), k -> new ArrayList<>()).add(f);
 
     VBox timeline = new VBox(0);
     List<Map.Entry<Integer, List<Fact>>> entries = new ArrayList<>(byLevel.entrySet());
     for (int i = 0; i < entries.size(); i++)
-      timeline
-          .getChildren()
-          .add(
-              buildLevelRow(
-                  entries.get(i).getKey(), entries.get(i).getValue(), i == entries.size() - 1));
+      timeline.getChildren().add(buildLevelRow(entries.get(i).getKey(), entries.get(i).getValue(), i == entries.size() - 1));
 
     page.getChildren().add(timeline);
     return page;
@@ -657,31 +580,14 @@ public class InferenceEngineUI extends Application {
     long derived = allFacts.stream().filter(f -> f.getDerivedBy() != null).count();
     long initial = allFacts.size() - derived;
     long levels = allFacts.stream().mapToInt(Fact::getLevel).distinct().count();
-    boolean alert =
-        allFacts.stream()
-            .anyMatch(
-                f -> f.getAttribute().startsWith("alerte") || f.getAttribute().equals("conseil"));
+    boolean alert = allFacts.stream().anyMatch(f -> f.getAttribute().startsWith("alerte") || f.getAttribute().equals("conseil"));
 
     HBox bar = new HBox(0);
-    bar.setStyle(
-        "-fx-background-color: "
-            + SURFACE
-            + "; -fx-border-color: "
-            + BORDER
-            + ";"
-            + "-fx-border-radius: 12; -fx-background-radius: 12;");
+    bar.setStyle("-fx-background-color: " + SURFACE + "; -fx-border-color: " + BORDER + ";" + "-fx-border-radius: 12; -fx-background-radius: 12;");
     bar.setAlignment(Pos.CENTER);
-    bar.getChildren()
-        .addAll(
-            statCell(String.valueOf(allFacts.size()), "Faits totaux", PRIMARY),
-            statDivider(),
-            statCell(String.valueOf(initial), "Initiaux", TXT2),
-            statDivider(),
-            statCell(String.valueOf(derived), "Déduits", SUCCESS),
-            statDivider(),
-            statCell(String.valueOf(levels), "Niveaux", "#7C3AED"),
-            statDivider(),
-            statCell(alert ? "Oui" : "Non", "Alerte", alert ? WARN : TXT3));
+    bar.getChildren().addAll(statCell(String.valueOf(allFacts.size()), "Faits totaux", PRIMARY), statDivider(),
+        statCell(String.valueOf(initial), "Initiaux", TXT2), statDivider(), statCell(String.valueOf(derived), "Déduits", SUCCESS), statDivider(),
+        statCell(String.valueOf(levels), "Niveaux", "#7C3AED"), statDivider(), statCell(alert ? "Oui" : "Non", "Alerte", alert ? WARN : TXT3));
     return bar;
   }
 
@@ -746,25 +652,21 @@ public class InferenceEngineUI extends Application {
 
     HBox levelHead = new HBox(10);
     levelHead.setAlignment(Pos.CENTER_LEFT);
-    Label levelLbl =
-        new Label(level == 0 ? "Niveau 0 — Faits initiaux" : "Niveau " + level + " — Déduction");
+    Label levelLbl = new Label(level == 0 ? "Niveau 0 — Faits initiaux" : "Niveau " + level + " — Déduction");
     levelLbl.setFont(Font.font("System", FontWeight.BOLD, 14));
     levelLbl.setTextFill(Color.web(TXT1));
     Label countBadge = new Label(facts.size() + " fait" + (facts.size() > 1 ? "s" : ""));
     countBadge.setFont(Font.font("System", 11));
     countBadge.setTextFill(Color.web(accent));
-    countBadge.setStyle(
-        "-fx-background-color: transparent; -fx-border-color: "
-            + accent
-            + ";"
-            + "-fx-border-radius: 20; -fx-padding: 2 10;");
+    countBadge.setStyle("-fx-background-color: transparent; -fx-border-color: " + accent + ";" + "-fx-border-radius: 20; -fx-padding: 2 10;");
     levelHead.getChildren().addAll(levelLbl, countBadge);
     content.getChildren().add(levelHead);
 
     FlowPane flow = new FlowPane();
     flow.setHgap(12);
     flow.setVgap(12);
-    for (Fact f : facts) flow.getChildren().add(buildResultCard(f, accent));
+    for (Fact f : facts)
+      flow.getChildren().add(buildResultCard(f, accent));
 
     content.getChildren().add(flow);
     row.getChildren().addAll(gutter, content);
@@ -776,13 +678,7 @@ public class InferenceEngineUI extends Application {
   private Node buildResultCard(Fact fact, String accent) {
     HBox card = new HBox();
     card.setPrefWidth(250);
-    card.setStyle(
-        "-fx-background-color: "
-            + SURFACE
-            + "; -fx-border-color: "
-            + BORDER
-            + ";"
-            + "-fx-border-radius: 9; -fx-background-radius: 9;");
+    card.setStyle("-fx-background-color: " + SURFACE + "; -fx-border-color: " + BORDER + ";" + "-fx-border-radius: 9; -fx-background-radius: 9;");
 
     Region strip = new Region();
     strip.setPrefWidth(4);
@@ -815,8 +711,7 @@ public class InferenceEngineUI extends Application {
       Label origin = new Label("Fait initial");
       origin.setFont(Font.font("System", 10));
       origin.setTextFill(Color.web(TXT3));
-      origin.setStyle(
-          "-fx-background-color: " + BG + "; -fx-background-radius: 4; -fx-padding: 1 7;");
+      origin.setStyle("-fx-background-color: " + BG + "; -fx-background-radius: 4; -fx-padding: 1 7;");
       body.getChildren().addAll(top, origin);
     }
 
@@ -842,14 +737,8 @@ public class InferenceEngineUI extends Application {
     HBox bar = new HBox(14);
     bar.setPadding(new Insets(17, 40, 17, 40));
     bar.setAlignment(Pos.CENTER_LEFT);
-    bar.setStyle(
-        "-fx-background-color: "
-            + SURFACE
-            + ";"
-            + "-fx-border-color: transparent transparent "
-            + BORDER
-            + " transparent;"
-            + "-fx-border-width: 0 0 1 0;");
+    bar.setStyle("-fx-background-color: " + SURFACE + ";" + "-fx-border-color: transparent transparent " + BORDER + " transparent;"
+        + "-fx-border-width: 0 0 1 0;");
 
     if (resultsMode) {
       Button back = flatButton("← Retour");
@@ -913,39 +802,25 @@ public class InferenceEngineUI extends Application {
   private Button primaryButton(String text) {
     Button btn = new Button(text);
     btn.setFont(Font.font("System", FontWeight.BOLD, 13));
-    String base =
-        "-fx-background-color: "
-            + PRIMARY
-            + "; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 9 22; -fx-cursor: hand;";
-    String hover =
-        "-fx-background-color: "
-            + PRIMARY_ALT
-            + "; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 9 22; -fx-cursor: hand;";
+    String base = "-fx-background-color: " + PRIMARY + "; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 9 22; -fx-cursor: hand;";
+    String hover = "-fx-background-color: " + PRIMARY_ALT + "; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 9 22; -fx-cursor: hand;";
     btn.setStyle(base);
-    btn.setOnMouseEntered(
-        e -> {
-          if (!btn.isDisabled()) btn.setStyle(hover);
-        });
-    btn.setOnMouseExited(
-        e -> {
-          if (!btn.isDisabled()) btn.setStyle(base);
-        });
+    btn.setOnMouseEntered(e -> {
+      if (!btn.isDisabled())
+        btn.setStyle(hover);
+    });
+    btn.setOnMouseExited(e -> {
+      if (!btn.isDisabled())
+        btn.setStyle(base);
+    });
     return btn;
   }
 
   private Button flatButton(String text) {
     Button btn = new Button(text);
     btn.setFont(Font.font("System", 12));
-    btn.setStyle(
-        "-fx-background-color: "
-            + BG
-            + "; -fx-text-fill: "
-            + TXT1
-            + ";"
-            + "-fx-border-color: "
-            + BORDER
-            + "; -fx-border-radius: 7; -fx-background-radius: 7;"
-            + "-fx-padding: 6 14; -fx-cursor: hand;");
+    btn.setStyle("-fx-background-color: " + BG + "; -fx-text-fill: " + TXT1 + ";" + "-fx-border-color: " + BORDER
+        + "; -fx-border-radius: 7; -fx-background-radius: 7;" + "-fx-padding: 6 14; -fx-cursor: hand;");
     return btn;
   }
 }

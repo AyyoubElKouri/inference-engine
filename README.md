@@ -22,42 +22,70 @@ A rule-based inference engine (Expert System) developed in Java 21. This project
 
 * **Language:** Java 21
 * **Graphical Interface:** JavaFX 21
-* **Build Tool:** Maven
+* **Build Tool:** Maven (use `./mvnw`, never bare `mvn`)
 * **Dependency Injection:** Google Guice 7.0.0
-* **JSON Parsing:** Jackson Databind
-* **Boilerplate:** Lombok
+* **JSON Parsing:** Jackson Databind 2.17.1
+* **Boilerplate:** Lombok 1.18.32
+* **Formatting:** Spotless 2.43.0 with `eclipse-formatter.xml` (2-space indent, 150-col)
 
 ## Installation & Execution
 
 ### Prerequisites
 * [Java Development Kit (JDK) 21](https://jdk.java.net/21/) (or later)
-* [Apache Maven](https://maven.apache.org/download.cgi)
+* No Maven install needed — the repo ships the `mvnw` wrapper.
 
 ### Run the project
 
-At the root of the project, simply execute the Maven command configured for the JavaFX plugin:
+Always run from the **repo root**: the readers load `src/main/resources/...` via relative paths, and running from another directory silently yields an empty rule base.
 
 ```bash
-mvn javafx:run
+./mvnw javafx:run
+```
+
+The entry point is `com.ayyoub.inferenceengine.Launcher` (launches the `InferenceEngineUI` JavaFX app). Headless/CI environments must not launch JavaFX.
+
+To build an executable fat JAR instead:
+
+```bash
+./mvnw package -DskipTests
+java -jar target/inference-engine-0.0.1-SNAPSHOT.jar
 ```
 
 ## Configuration (JSON)
 
 The rules and initial facts are defined in the `src/main/resources/` directory. You can redefine the expert's business logic by directly modifying these files.
-- `facts.json`: Represents the Working Memory at startup.
-- `rules.json`: Represents the system's rule base.
+- `facts.json`: top-level JSON array. Represents the Working Memory at startup.
+- `rules.json`: rules nested under `knowledge_base.rules`. Each rule has `id`, `condition`, `conclusions`, `priority` (conflict-resolution order, highest first), `confidence` and `explanation`.
+
+Condition DSL: leaf nodes use `attribute`/`operator`/`value`; groups use `all`/`any`/`not`/`xor`; quantifiers use `at_least`/`exactly`/`at_most` with `of`. Note: the legacy `InferenceEngine.forwardChaining` ignores `Rule.priority`.
 
 ## Development commands
 
-| Command | What it does |
-|---|---|
-| `./mvnw spotless:apply` | Format the code |
-| `./mvnw verify` | Build, run tests, check formatting |
-| `./mvnw test` | Run tests only |
-| `./mvnw spring-boot:run` | Start the app (if using Spring Boot) |
+```bash
+# Fast compile check
+./mvnw -q compile -DskipTests
+```
+
+```bash
+# Launch the JavaFX UI (from repo root)
+./mvnw javafx:run
+```
+
+```bash
+# Format the code (run before committing)
+./mvnw spotless:apply
+```
+
+```bash
+# Build + spotless:check (fails on format drift)
+./mvnw verify
+```
+
+Formatting is enforced by `spotless:check` during `verify` using `eclipse-formatter.xml` — not google-java-format.
 
 ## Tests
-To run the test scenarios:
+
 ```bash
-mvn clean test
+# Run tests (no test sources currently — succeeds with nothing to run)
+./mvnw test
 ```

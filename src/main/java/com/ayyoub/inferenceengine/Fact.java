@@ -24,8 +24,8 @@ public class Fact {
   private String derivedBy;
 
   /**
-   * The level of the fact in the inference process (e.g., 0 for initial facts, 1 for facts derived
-   * from level 0, etc.).
+   * The level of the fact in the inference process (e.g., 0 for initial facts, 1
+   * for facts derived from level 0, etc.).
    */
   private int level;
 }

@@ -34,15 +34,7 @@ public class InferenceEngine {
               // fact used by the rule that produced it.
               int newLevel = computeLevel(rule.getCondition(), workingMemory.getFacts()) + 1;
 
-              workingMemory.addFact(
-                  new Fact(
-                      "F" + counter++,
-                      attribute,
-                      operator,
-                      value,
-                      rule.getConfidence(),
-                      rule.getRuleId(),
-                      newLevel));
+              workingMemory.addFact(new Fact("F" + counter++, attribute, operator, value, rule.getConfidence(), rule.getRuleId(), newLevel));
               factsChanged = true;
             }
           }
@@ -59,8 +51,7 @@ public class InferenceEngine {
       String attr = (String) condition.get("attribute");
       String op = (String) condition.get("operator");
       Object val = condition.get("value");
-      return facts.stream()
-          .anyMatch(f -> f.getAttribute().equals(attr) && compareValues(f.getValue(), op, val));
+      return facts.stream().anyMatch(f -> f.getAttribute().equals(attr) && compareValues(f.getValue(), op, val));
     }
 
     if (condition.containsKey("all"))
@@ -72,21 +63,19 @@ public class InferenceEngine {
     if (condition.containsKey("xor"))
       return evaluateXOR((List<Map<String, Object>>) condition.get("xor"), facts);
     if (condition.containsKey("at_least"))
-      return evaluateAtLeast(
-          (int) condition.get("at_least"), (List<Map<String, Object>>) condition.get("of"), facts);
+      return evaluateAtLeast((int) condition.get("at_least"), (List<Map<String, Object>>) condition.get("of"), facts);
     if (condition.containsKey("exactly"))
-      return evaluateExactly(
-          (int) condition.get("exactly"), (List<Map<String, Object>>) condition.get("of"), facts);
+      return evaluateExactly((int) condition.get("exactly"), (List<Map<String, Object>>) condition.get("of"), facts);
     if (condition.containsKey("at_most"))
-      return evaluateAtMost(
-          (int) condition.get("at_most"), (List<Map<String, Object>>) condition.get("of"), facts);
+      return evaluateAtMost((int) condition.get("at_most"), (List<Map<String, Object>>) condition.get("of"), facts);
 
     return false;
   }
 
   @SuppressWarnings("unchecked")
   private boolean compareValues(Object real, String operator, Object expected) {
-    if (real == null || expected == null) return false;
+    if (real == null || expected == null)
+      return false;
     // Values are read from JSON, so both equality and ordering must use
     // the runtime value types rather than converting everything to text.
     return switch (operator) {
@@ -129,26 +118,24 @@ public class InferenceEngine {
       String attr = (String) condition.get("attribute");
       // For compound conditions, using the maximum matching level
       // preserves the dependency depth of the derived conclusion.
-      return facts.stream()
-          .filter(f -> f.getAttribute().equals(attr))
-          .mapToInt(Fact::getLevel)
-          .max()
-          .orElse(0);
+      return facts.stream().filter(f -> f.getAttribute().equals(attr)).mapToInt(Fact::getLevel).max().orElse(0);
     }
 
-    return getSubConditions(condition).stream()
-        .mapToInt(c -> computeLevel(c, facts))
-        .max()
-        .orElse(0);
+    return getSubConditions(condition).stream().mapToInt(c -> computeLevel(c, facts)).max().orElse(0);
   }
 
   @SuppressWarnings("unchecked")
   private List<Map<String, Object>> getSubConditions(Map<String, Object> condition) {
-    if (condition.containsKey("all")) return (List<Map<String, Object>>) condition.get("all");
-    if (condition.containsKey("any")) return (List<Map<String, Object>>) condition.get("any");
-    if (condition.containsKey("xor")) return (List<Map<String, Object>>) condition.get("xor");
-    if (condition.containsKey("of")) return (List<Map<String, Object>>) condition.get("of");
-    if (condition.containsKey("not")) return List.of((Map<String, Object>) condition.get("not"));
+    if (condition.containsKey("all"))
+      return (List<Map<String, Object>>) condition.get("all");
+    if (condition.containsKey("any"))
+      return (List<Map<String, Object>>) condition.get("any");
+    if (condition.containsKey("xor"))
+      return (List<Map<String, Object>>) condition.get("xor");
+    if (condition.containsKey("of"))
+      return (List<Map<String, Object>>) condition.get("of");
+    if (condition.containsKey("not"))
+      return List.of((Map<String, Object>) condition.get("not"));
     return List.of();
   }
 }

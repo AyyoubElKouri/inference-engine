@@ -16,26 +16,27 @@
 
     <dependencies>
 
-        <!-- Google Guice (DI léger) -->
+        <!-- Guice: lightweight dependency injection for wiring engine components together -->
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <version>7.0.0</version>
         </dependency>
 
-        <!-- JavaFX -->
+        <!-- JavaFX Controls: UI widgets powering the desktop inference engine interface -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>21</version>
         </dependency>
+        <!-- JavaFX FXML: loads FXML layouts for declarative JavaFX user interfaces -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>21</version>
         </dependency>
 
-        <!-- Lombok -->
+        <!-- Lombok: generates getters, setters and builders at compile time -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -43,14 +44,14 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Jackson -->
+        <!-- Jackson: parses JSON rules and facts into Java objects -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.17.1</version>
         </dependency>
 
-        <!-- Tests -->
+        <!-- JUnit: testing framework validating engine behavior with unit tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -63,6 +64,7 @@
     <build>
         <plugins>
 
+            <!-- Compiler: compiles Java 21 sources with Lombok annotation processing -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -81,7 +83,7 @@
                 </configuration>
             </plugin>
 
-            <!-- JavaFX runner -->
+            <!-- JavaFX: runs the JavaFX desktop application directly via Maven -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -91,7 +93,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Fat JAR exécutable sans Spring -->
+            <!-- Shade: builds executable fat JAR with all runtime dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -111,16 +113,17 @@
                 </executions>
             </plugin>
 
+            <!-- Spotless: enforces consistent code formatting using Eclipse formatter rules -->
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
                 <version>2.43.0</version>
                 <configuration>
                     <java>
-                        <googleJavaFormat>
-                            <version>1.22.0</version>
-                            <style>GOOGLE</style>
-                        </googleJavaFormat>
+                        <eclipse>
+                            <file>${project.basedir}/eclipse-formatter.xml</file>
+                            <version>4.33</version>
+                        </eclipse>
                         <removeUnusedImports/>
                         <importOrder/>
                     </java>

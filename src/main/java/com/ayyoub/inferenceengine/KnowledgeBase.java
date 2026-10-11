@@ -9,8 +9,9 @@ public class KnowledgeBase {
   private List<Rule> rules;
 
   /**
-   * Constructor — loads rules from rules.json. Si le fichier est illisible, initialise rules à une
-   * liste vide pour éviter tout NullPointerException en aval.
+   * Constructor — loads rules from rules.json. Si le fichier est illisible,
+   * initialise rules à une liste vide pour éviter tout NullPointerException en
+   * aval.
    */
   public KnowledgeBase() {
     try {
