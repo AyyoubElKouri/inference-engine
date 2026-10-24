@@ -1,5 +1,8 @@
 package com.ayyoub.inferenceengine;
 
+import com.ayyoub.inferenceengine.engine.ConditionEvaluator;
+import com.ayyoub.inferenceengine.engine.ConditionEvaluator.ProofResult;
+import com.ayyoub.inferenceengine.engine.Derivation;
 import java.util.List;
 import java.util.Map;
 
@@ -7,15 +10,31 @@ public class InferenceEngine {
 
   private final WorkingMemory workingMemory;
   private final KnowledgeBase knowledgeBase;
+  private final ConditionEvaluator evaluator;
 
   public InferenceEngine(WorkingMemory workingMemory, KnowledgeBase knowledgeBase) {
-    this.workingMemory = workingMemory;
-    this.knowledgeBase = knowledgeBase;
+    this(workingMemory, knowledgeBase, new ConditionEvaluator());
   }
 
+  /**
+   * Creates the engine with a caller-supplied evaluator, so tests can substitute it.
+   */
+  public InferenceEngine(WorkingMemory workingMemory, KnowledgeBase knowledgeBase, ConditionEvaluator evaluator) {
+    this.workingMemory = workingMemory;
+    this.knowledgeBase = knowledgeBase;
+    this.evaluator = evaluator;
+  }
+
+  /**
+   * Derives facts until a full pass over the rules adds nothing new.
+   */
   public void forwardChaining() {
     List<Rule> rules = knowledgeBase.getRules();
-    int counter = workingMemory.getFacts().size();
+
+    // Start past the highest existing numeric id so derived ids never
+    // collide with seed facts (which the trace graph keys edges on).
+    int counter = workingMemory.getFacts().stream().map(Fact::getFactId).filter(id -> id != null && id.matches("F\\d+"))
+        .mapToInt(id -> Integer.parseInt(id.substring(1))).max().orElse(workingMemory.getFacts().size()) + 1;
     boolean factsChanged = true;
 
     // Keep applying rules until a complete pass adds no new facts. This
@@ -23,7 +42,9 @@ public class InferenceEngine {
     while (factsChanged) {
       factsChanged = false;
       for (Rule rule : rules) {
-        if (evaluate(rule.getCondition(), workingMemory.getFacts())) {
+        ProofResult proof = evaluator.evaluateWithProvenance(rule.getCondition(), workingMemory.getFacts());
+
+        if (proof.matched()) {
           for (Map<String, Object> conclusion : rule.getConclusions()) {
             String attribute = (String) conclusion.get("attribute");
             String operator = (String) conclusion.get("operator");
@@ -32,110 +53,19 @@ public class InferenceEngine {
             if (!workingMemory.factExists(attribute, operator, value)) {
               // A fact's level is one greater than the deepest
               // fact used by the rule that produced it.
-              int newLevel = computeLevel(rule.getCondition(), workingMemory.getFacts()) + 1;
+              int newLevel = proof.depth() + 1;
+              String conclusionId = "F" + counter++;
 
-              workingMemory.addFact(new Fact("F" + counter++, attribute, operator, value, rule.getConfidence(), rule.getRuleId(), newLevel));
+              workingMemory.addFact(new Fact(conclusionId, attribute, operator, value, rule.getConfidence(), rule.getRuleId(), newLevel));
+
+              // Provenance is captured at fire time so the trace view
+              // draws the minimal proof without recomputing matches.
+              workingMemory.addDerivation(new Derivation(rule.getRuleId(), conclusionId, proof.premiseIds(), proof.absences()));
               factsChanged = true;
             }
           }
         }
       }
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private boolean evaluate(Map<String, Object> condition, List<Fact> facts) {
-    // A condition is represented as a JSON object. An object with an
-    // attribute is a leaf; the other keys describe boolean/n-ary nodes.
-    if (condition.containsKey("attribute")) {
-      String attr = (String) condition.get("attribute");
-      String op = (String) condition.get("operator");
-      Object val = condition.get("value");
-      return facts.stream().anyMatch(f -> f.getAttribute().equals(attr) && compareValues(f.getValue(), op, val));
-    }
-
-    if (condition.containsKey("all"))
-      return evaluateAll((List<Map<String, Object>>) condition.get("all"), facts);
-    if (condition.containsKey("any"))
-      return evaluateAny((List<Map<String, Object>>) condition.get("any"), facts);
-    if (condition.containsKey("not"))
-      return !evaluate((Map<String, Object>) condition.get("not"), facts);
-    if (condition.containsKey("xor"))
-      return evaluateXOR((List<Map<String, Object>>) condition.get("xor"), facts);
-    if (condition.containsKey("at_least"))
-      return evaluateAtLeast((int) condition.get("at_least"), (List<Map<String, Object>>) condition.get("of"), facts);
-    if (condition.containsKey("exactly"))
-      return evaluateExactly((int) condition.get("exactly"), (List<Map<String, Object>>) condition.get("of"), facts);
-    if (condition.containsKey("at_most"))
-      return evaluateAtMost((int) condition.get("at_most"), (List<Map<String, Object>>) condition.get("of"), facts);
-
-    return false;
-  }
-
-  @SuppressWarnings("unchecked")
-  private boolean compareValues(Object real, String operator, Object expected) {
-    if (real == null || expected == null)
-      return false;
-    // Values are read from JSON, so both equality and ordering must use
-    // the runtime value types rather than converting everything to text.
-    return switch (operator) {
-      case "=" -> real.equals(expected);
-      case "!=" -> !real.equals(expected);
-      case ">" -> ((Comparable<Object>) real).compareTo(expected) > 0;
-      case "<" -> ((Comparable<Object>) real).compareTo(expected) < 0;
-      case ">=" -> ((Comparable<Object>) real).compareTo(expected) >= 0;
-      case "<=" -> ((Comparable<Object>) real).compareTo(expected) <= 0;
-      default -> throw new IllegalArgumentException("Unknown operator: " + operator);
-    };
-  }
-
-  private boolean evaluateAll(List<Map<String, Object>> conds, List<Fact> facts) {
-    return conds.stream().allMatch(c -> evaluate(c, facts));
-  }
-
-  private boolean evaluateAny(List<Map<String, Object>> conds, List<Fact> facts) {
-    return conds.stream().anyMatch(c -> evaluate(c, facts));
-  }
-
-  private boolean evaluateXOR(List<Map<String, Object>> conds, List<Fact> facts) {
-    return conds.stream().filter(c -> evaluate(c, facts)).count() == 1;
-  }
-
-  private boolean evaluateAtLeast(int n, List<Map<String, Object>> conds, List<Fact> facts) {
-    return conds.stream().filter(c -> evaluate(c, facts)).count() >= n;
-  }
-
-  private boolean evaluateExactly(int n, List<Map<String, Object>> conds, List<Fact> facts) {
-    return conds.stream().filter(c -> evaluate(c, facts)).count() == n;
-  }
-
-  private boolean evaluateAtMost(int n, List<Map<String, Object>> conds, List<Fact> facts) {
-    return conds.stream().filter(c -> evaluate(c, facts)).count() <= n;
-  }
-
-  private int computeLevel(Map<String, Object> condition, List<Fact> facts) {
-    if (condition.containsKey("attribute")) {
-      String attr = (String) condition.get("attribute");
-      // For compound conditions, using the maximum matching level
-      // preserves the dependency depth of the derived conclusion.
-      return facts.stream().filter(f -> f.getAttribute().equals(attr)).mapToInt(Fact::getLevel).max().orElse(0);
-    }
-
-    return getSubConditions(condition).stream().mapToInt(c -> computeLevel(c, facts)).max().orElse(0);
-  }
-
-  @SuppressWarnings("unchecked")
-  private List<Map<String, Object>> getSubConditions(Map<String, Object> condition) {
-    if (condition.containsKey("all"))
-      return (List<Map<String, Object>>) condition.get("all");
-    if (condition.containsKey("any"))
-      return (List<Map<String, Object>>) condition.get("any");
-    if (condition.containsKey("xor"))
-      return (List<Map<String, Object>>) condition.get("xor");
-    if (condition.containsKey("of"))
-      return (List<Map<String, Object>>) condition.get("of");
-    if (condition.containsKey("not"))
-      return List.of((Map<String, Object>) condition.get("not"));
-    return List.of();
   }
 }

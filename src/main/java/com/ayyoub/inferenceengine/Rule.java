@@ -13,25 +13,39 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true) // ← ignore tous les champs JSON inconnus
 public class Rule {
 
-  /** ID of the rule. */
+  /**
+   * ID of the rule.
+   */
   @JsonProperty("id")
   private String ruleId;
 
-  /** Name of the rule. */
+  /**
+   * Name of the rule.
+   */
   private String name;
 
-  /** Conditions of the rule. */
+  /**
+   * Conditions of the rule.
+   */
   private Map<String, Object> condition;
 
-  /** Conclusions of the rule. */
+  /**
+   * Conclusions of the rule.
+   */
   private List<Map<String, Object>> conclusions;
 
-  /** Priority of the rule. */
+  /**
+   * Priority of the rule.
+   */
   private int priority;
 
-  /** Confidence level (0.0 – 1.0). */
+  /**
+   * Confidence level (0.0 – 1.0).
+   */
   private double confidence;
 
-  /** Human-readable explanation. */
+  /**
+   * Human-readable explanation.
+   */
   private String explanation;
 }

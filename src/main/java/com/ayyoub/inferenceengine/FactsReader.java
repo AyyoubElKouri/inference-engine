@@ -10,8 +10,7 @@ import java.util.List;
 public class FactsReader {
 
   /**
-   * Read initial facts from a JSON array file. Value type is inferred from the
-   * JSON node type (boolean, int, double, string).
+   * Read initial facts from a JSON array file. Value type is inferred from the JSON node type (boolean, int, double, string).
    *
    * @param filePath
    *          Path to facts.json

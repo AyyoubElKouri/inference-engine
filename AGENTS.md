@@ -32,3 +32,9 @@
 
 - Formatter is `eclipse-formatter.xml` via Spotless (2-space, 150-col), not google-java-format.
 - CRITICAL: Group code into logical blocks, one step or intention each. Separate blocks with exactly one blank line. No exceptions.
+- CRITICAL: Javadoc is always multi-line, never `/** one-liner */`. The formatter cannot enforce this (stock JDT has no always-expand switch — the boundary flags only preserve the shape), so every new comment must be written expanded:
+  ```java
+  /**
+   * ID of the fact.
+   */
+  ```

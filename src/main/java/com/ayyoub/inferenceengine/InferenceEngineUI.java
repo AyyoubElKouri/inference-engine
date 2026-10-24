@@ -24,13 +24,11 @@ import javafx.util.Duration;
  * Two-page inference engine UI.
  *
  * <p>
- * Page 1 — Fact Builder : left panel = catalogue of available attributes (from
- * facts.json), right panel = facts the user has added + their typed inputs.
- * Nothing is pre-added; the user builds their set.
+ * Page 1 — Fact Builder : left panel = catalogue of available attributes (from facts.json), right panel = facts the user has added + their typed
+ * inputs. Nothing is pre-added; the user builds their set.
  *
  * <p>
- * Page 2 — Trace View : full forward-chaining trace grouped by level, with a
- * stats bar and a back button.
+ * Page 2 — Trace View : full forward-chaining trace grouped by level, with a stats bar and a back button.
  */
 public class InferenceEngineUI extends Application {
 
@@ -51,8 +49,6 @@ public class InferenceEngineUI extends Application {
   private static final String DANGER_TL = "#FEF2F2";
   private static final String DANGER = "#DC2626";
 
-  private static final String[] LEVEL_ACCENT = {"#6B7280", "#1B4FD8", "#0891B2", "#059669", "#7C3AED", "#DB2777"};
-
   // ── State ─────────────────────────────────────────────────────────────────
 
   private Stage stage;
@@ -60,25 +56,34 @@ public class InferenceEngineUI extends Application {
 
   private static Injector injector;
 
-  /** Full catalogue loaded from facts.json (templates with types). */
+  /**
+   * Full catalogue loaded from facts.json (templates with types).
+   */
   private List<Fact> catalogue;
 
   /**
-   * Facts the user has chosen to add, keyed by attribute name. Insertion order is
-   * preserved for display.
+   * Facts the user has chosen to add, keyed by attribute name. Insertion order is preserved for display.
    */
   private final LinkedHashMap<String, Fact> addedFacts = new LinkedHashMap<>();
 
-  /** Current typed value for each added attribute. */
+  /**
+   * Current typed value for each added attribute.
+   */
   private final Map<String, Object> userInputs = new LinkedHashMap<>();
 
-  /** The VBox that holds the list of added-fact rows (right panel). */
+  /**
+   * The VBox that holds the list of added-fact rows (right panel).
+   */
   private VBox addedList;
 
-  /** Label showing count / empty-state in right panel. */
+  /**
+   * Label showing count / empty-state in right panel.
+   */
   private Label rightHint;
 
-  /** Run button — enabled only when at least one fact is added. */
+  /**
+   * Run button — enabled only when at least one fact is added.
+   */
   private Button runBtn;
 
   // ── Application Entry ─────────────────────────────────────────────────────
@@ -406,8 +411,7 @@ public class InferenceEngineUI extends Application {
   }
 
   /**
-   * Applique couleur + position du knob. animate=true → slide avec
-   * TranslateTransition, false → instantané.
+   * Applique couleur + position du knob. animate=true → slide avec TranslateTransition, false → instantané.
    */
   private void applySwitchState(Rectangle track, Circle knob, double trackW, double knobD, double padding, boolean on, boolean animate) {
     double targetX = on ? (trackW / 2) - (knobD / 2) - padding : -(trackW / 2) + (knobD / 2) + padding;
@@ -537,41 +541,32 @@ public class InferenceEngineUI extends Application {
       wm.addFact(new Fact("F" + idx++, attr, "=", val, entry.getValue().getConfidence(), null, 0));
     }
     new InferenceEngine(wm, knowledgeBase).forwardChaining();
-    showResultsPage(wm.getFacts());
+    showResultsPage(wm);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // PAGE 2 — Reasoning Trace
   // ═══════════════════════════════════════════════════════════════════════════
 
-  private void showResultsPage(List<Fact> allFacts) {
+  private void showResultsPage(WorkingMemory workingMemory) {
+    List<Fact> allFacts = workingMemory.getFacts();
+
     BorderPane root = new BorderPane();
     root.setStyle("-fx-background-color: " + BG + ";");
     root.setTop(buildTopBar(true));
-    ScrollPane scroll = new ScrollPane(buildTrace(allFacts));
-    scroll.setFitToWidth(true);
-    scroll.setBorder(Border.EMPTY);
-    scroll.setStyle("-fx-background: " + BG + "; -fx-background-color: " + BG + ";");
-    root.setCenter(scroll);
-    stage.setScene(new Scene(root, 960, 660));
-  }
 
-  private Node buildTrace(List<Fact> allFacts) {
-    VBox page = new VBox(32);
-    page.setPadding(new Insets(36, 40, 48, 40));
+    VBox page = new VBox(20);
+    page.setPadding(new Insets(28, 36, 32, 36));
     page.getChildren().add(buildStatsBar(allFacts));
 
-    Map<Integer, List<Fact>> byLevel = new TreeMap<>();
-    for (Fact f : allFacts)
-      byLevel.computeIfAbsent(f.getLevel(), k -> new ArrayList<>()).add(f);
+    // Bipartite reasoning graph: fact nodes, rule nodes, and
+    // premise → rule → conclusion edges with absence badges.
+    Node graphView = new TraceGraphView(allFacts, workingMemory.getDerivations()).build();
+    VBox.setVgrow(graphView, Priority.ALWAYS);
+    page.getChildren().add(graphView);
 
-    VBox timeline = new VBox(0);
-    List<Map.Entry<Integer, List<Fact>>> entries = new ArrayList<>(byLevel.entrySet());
-    for (int i = 0; i < entries.size(); i++)
-      timeline.getChildren().add(buildLevelRow(entries.get(i).getKey(), entries.get(i).getValue(), i == entries.size() - 1));
-
-    page.getChildren().add(timeline);
-    return page;
+    root.setCenter(page);
+    stage.setScene(new Scene(root, 960, 660));
   }
 
   // ── Stats bar ─────────────────────────────────────────────────────────────
@@ -612,123 +607,6 @@ public class InferenceEngineUI extends Application {
     r.setMinHeight(50);
     r.setStyle("-fx-background-color: " + BORDER + ";");
     return r;
-  }
-
-  // ── Timeline level row ────────────────────────────────────────────────────
-
-  private Node buildLevelRow(int level, List<Fact> facts, boolean isLast) {
-    String accent = LEVEL_ACCENT[Math.min(level, LEVEL_ACCENT.length - 1)];
-    HBox row = new HBox(0);
-
-    // Gutter (circle + connecting line)
-    VBox gutter = new VBox();
-    gutter.setAlignment(Pos.TOP_CENTER);
-    gutter.setPrefWidth(56);
-    gutter.setMinWidth(56);
-
-    StackPane dotBox = new StackPane();
-    dotBox.setMinHeight(42);
-    dotBox.setAlignment(Pos.CENTER);
-    Circle circle = new Circle(13, Color.web(accent));
-    Label numLbl = new Label(String.valueOf(level));
-    numLbl.setFont(Font.font("System", FontWeight.BOLD, 11));
-    numLbl.setTextFill(Color.WHITE);
-    dotBox.getChildren().addAll(circle, numLbl);
-    gutter.getChildren().add(dotBox);
-
-    if (!isLast) {
-      Region line = new Region();
-      line.setPrefWidth(2);
-      line.setStyle("-fx-background-color: " + BORDER + ";");
-      VBox.setVgrow(line, Priority.ALWAYS);
-      line.setMinHeight(24);
-      gutter.getChildren().add(line);
-    }
-
-    // Content
-    VBox content = new VBox(12);
-    content.setPadding(new Insets(6, 0, isLast ? 0 : 32, 16));
-    HBox.setHgrow(content, Priority.ALWAYS);
-
-    HBox levelHead = new HBox(10);
-    levelHead.setAlignment(Pos.CENTER_LEFT);
-    Label levelLbl = new Label(level == 0 ? "Niveau 0 — Faits initiaux" : "Niveau " + level + " — Déduction");
-    levelLbl.setFont(Font.font("System", FontWeight.BOLD, 14));
-    levelLbl.setTextFill(Color.web(TXT1));
-    Label countBadge = new Label(facts.size() + " fait" + (facts.size() > 1 ? "s" : ""));
-    countBadge.setFont(Font.font("System", 11));
-    countBadge.setTextFill(Color.web(accent));
-    countBadge.setStyle("-fx-background-color: transparent; -fx-border-color: " + accent + ";" + "-fx-border-radius: 20; -fx-padding: 2 10;");
-    levelHead.getChildren().addAll(levelLbl, countBadge);
-    content.getChildren().add(levelHead);
-
-    FlowPane flow = new FlowPane();
-    flow.setHgap(12);
-    flow.setVgap(12);
-    for (Fact f : facts)
-      flow.getChildren().add(buildResultCard(f, accent));
-
-    content.getChildren().add(flow);
-    row.getChildren().addAll(gutter, content);
-    return row;
-  }
-
-  // ── Result fact card ──────────────────────────────────────────────────────
-
-  private Node buildResultCard(Fact fact, String accent) {
-    HBox card = new HBox();
-    card.setPrefWidth(250);
-    card.setStyle("-fx-background-color: " + SURFACE + "; -fx-border-color: " + BORDER + ";" + "-fx-border-radius: 9; -fx-background-radius: 9;");
-
-    Region strip = new Region();
-    strip.setPrefWidth(4);
-    strip.setMinWidth(4);
-    strip.setStyle("-fx-background-color: " + accent + "; -fx-background-radius: 9 0 0 9;");
-
-    VBox body = new VBox(8);
-    body.setPadding(new Insets(14, 14, 14, 12));
-    HBox.setHgrow(body, Priority.ALWAYS);
-
-    HBox top = new HBox(6);
-    top.setAlignment(Pos.CENTER_LEFT);
-    Label attrLbl = new Label(fact.getAttribute());
-    attrLbl.setFont(Font.font("System", FontWeight.BOLD, 12));
-    attrLbl.setTextFill(Color.web(TXT1));
-    Region sp = new Region();
-    HBox.setHgrow(sp, Priority.ALWAYS);
-    String valStr = fact.getValue() != null ? fact.getValue().toString() : "—";
-    Label valLbl = new Label(fact.getOperator() + " " + valStr);
-    valLbl.setFont(Font.font("System", FontWeight.BOLD, 12));
-    valLbl.setTextFill(Color.web(accent));
-    top.getChildren().addAll(attrLbl, sp, valLbl);
-
-    if (fact.getDerivedBy() != null) {
-      Label origin = new Label("↳ " + fact.getDerivedBy());
-      origin.setFont(Font.font("System", 11));
-      origin.setTextFill(Color.web(TXT2));
-      body.getChildren().addAll(top, origin);
-    } else {
-      Label origin = new Label("Fait initial");
-      origin.setFont(Font.font("System", 10));
-      origin.setTextFill(Color.web(TXT3));
-      origin.setStyle("-fx-background-color: " + BG + "; -fx-background-radius: 4; -fx-padding: 1 7;");
-      body.getChildren().addAll(top, origin);
-    }
-
-    ProgressBar pb = new ProgressBar(fact.getConfidence());
-    pb.setMaxWidth(Double.MAX_VALUE);
-    pb.setPrefHeight(3);
-    pb.setStyle("-fx-accent: " + accent + "; -fx-control-inner-background: " + BORDER + ";");
-    Label confLbl = new Label(String.format("%.0f%%", fact.getConfidence() * 100));
-    confLbl.setFont(Font.font("System", 10));
-    confLbl.setTextFill(Color.web(TXT3));
-    HBox confRow = new HBox(6, pb, confLbl);
-    HBox.setHgrow(pb, Priority.ALWAYS);
-    confRow.setAlignment(Pos.CENTER_LEFT);
-    body.getChildren().add(confRow);
-
-    card.getChildren().addAll(strip, body);
-    return card;
   }
 
   // ── Shared helpers ────────────────────────────────────────────────────────

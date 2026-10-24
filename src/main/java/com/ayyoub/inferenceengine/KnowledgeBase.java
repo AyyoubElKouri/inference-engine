@@ -5,13 +5,14 @@ import java.util.List;
 
 public class KnowledgeBase {
 
-  /** List of rules in the knowledge base. */
+  /**
+   * List of rules in the knowledge base.
+   */
   private List<Rule> rules;
 
   /**
-   * Constructor — loads rules from rules.json. Si le fichier est illisible,
-   * initialise rules à une liste vide pour éviter tout NullPointerException en
-   * aval.
+   * Constructor — loads rules from rules.json. Si le fichier est illisible, initialise rules à une liste vide pour éviter tout NullPointerException
+   * en aval.
    */
   public KnowledgeBase() {
     try {
@@ -22,22 +23,30 @@ public class KnowledgeBase {
     }
   }
 
-  /** Getter */
+  /**
+   * Getter
+   */
   public List<Rule> getRules() {
     return rules;
   }
 
-  /** Add a new rule to the knowledge base. */
+  /**
+   * Add a new rule to the knowledge base.
+   */
   public void addRule(Rule rule) {
     this.rules.add(rule);
   }
 
-  /** Remove a rule by its ID. */
+  /**
+   * Remove a rule by its ID.
+   */
   public void removeRuleById(String ruleId) {
     rules.removeIf(rule -> rule.getRuleId().equals(ruleId));
   }
 
-  /** Find a rule by its ID. */
+  /**
+   * Find a rule by its ID.
+   */
   public Rule getRuleById(String ruleId) {
     return rules.stream().filter(rule -> rule.getRuleId().equals(ruleId)).findFirst().orElse(null);
   }
