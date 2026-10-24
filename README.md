@@ -42,7 +42,7 @@ Always run from the **repo root**: the readers load `src/main/resources/...` via
 ./mvnw javafx:run
 ```
 
-The entry point is `com.ayyoub.inferenceengine.Launcher` (launches the `InferenceEngineUI` JavaFX app). Headless/CI environments must not launch JavaFX.
+The entry point is `com.ayyoub.inferenceengine.Launcher`, which starts `EngineApplication` and then `EngineUI` (`Launcher` → `EngineApplication` → `EngineUI`). Headless/CI environments must not launch JavaFX.
 
 To build an executable fat JAR instead:
 

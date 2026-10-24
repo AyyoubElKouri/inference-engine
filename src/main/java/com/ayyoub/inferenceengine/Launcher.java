@@ -1,34 +1,21 @@
 package com.ayyoub.inferenceengine;
 
-import com.ayyoub.inferenceengine.config.AppModule;
-import com.ayyoub.inferenceengine.json.JsonParseException;
-import com.ayyoub.inferenceengine.ui.EngineUI;
-import com.ayyoub.inferenceengine.ui.component.Dialogs;
-import com.google.inject.ConfigurationException;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.ProvisionException;
+import com.ayyoub.inferenceengine.ui.EngineApplication;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.stage.Stage;
 
 /**
- * Application entry point and composition-root trigger.
+ * Plain entry point that boots the JavaFX application.
+ *
+ * <p>
+ * This class intentionally does not extend {@link Application}: keeping the JAR's main class free of JavaFX inheritance lets the shaded JAR start
+ * without the JavaFX runtime being detected as missing. It is the documented exception to the rule that JavaFX code lives under {@code ui}.
  */
-public class Launcher extends Application {
+public final class Launcher {
 
-  @Override
-  public void start(Stage stage) {
-    try {
-      Injector injector = Guice.createInjector(new AppModule());
-      injector.getInstance(EngineUI.class).show(stage);
-    } catch (JsonParseException | ConfigurationException | ProvisionException error) {
-      Dialogs.showError(null, "Chargement impossible", error.getMessage());
-      Platform.exit();
-    }
-  }
-
+  /**
+   * Starts the JavaFX application.
+   */
   public static void main(String[] args) {
-    launch(args);
+    Application.launch(EngineApplication.class, args);
   }
 }
