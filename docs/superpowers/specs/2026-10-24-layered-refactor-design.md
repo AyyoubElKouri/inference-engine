@@ -39,7 +39,7 @@ Dependency direction:
 
 Hard rules:
 
-- No `javafx` import outside `ui`.
+- No `javafx` import outside `ui`, except `Launcher` (the JavaFX entry point).
 - No Jackson import outside `json`.
 - No file or classpath I/O outside `json`.
 - No constructor reads files except `JsonParserImpl` and `InferenceServiceImpl`.
