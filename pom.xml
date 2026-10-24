@@ -36,14 +36,6 @@
             <version>21</version>
         </dependency>
 
-        <!-- Lombok: generates getters, setters and builders at compile time -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.32</version>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Jackson: parses JSON rules and facts into Java objects -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -64,7 +56,7 @@
     <build>
         <plugins>
 
-            <!-- Compiler: compiles Java 21 sources with Lombok annotation processing -->
+            <!-- Compiler: compiles Java 21 sources -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -72,14 +64,6 @@
                 <configuration>
                     <source>21</source>
                     <target>21</target>
-                    <!-- Nécessaire pour Lombok + Guice -->
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>1.18.32</version>
-                        </path>
-                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
 
