@@ -1,6 +1,6 @@
 package com.ayyoub.inferenceengine;
 
-import com.ayyoub.inferenceengine.engine.ConditionEvaluator.AbsenceWitness;
+import com.ayyoub.inferenceengine.domain.AbsenceWitness;
 import com.ayyoub.inferenceengine.engine.Derivation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;

@@ -1,6 +1,7 @@
 package com.ayyoub.inferenceengine.engine;
 
-import com.ayyoub.inferenceengine.Fact;
+import com.ayyoub.inferenceengine.domain.AbsenceWitness;
+import com.ayyoub.inferenceengine.domain.Fact;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,25 +14,6 @@ public class ConditionEvaluator {
   public record MatchResult(
       boolean matched,
       int depth) {
-  }
-
-  /**
-   * Witness that a negated branch holds because its leaf is absent from working memory.
-   *
-   * <p>
-   * The witness names the unsatisfied leaf so the trace view can render a dashed absence edge from a badge instead of a solid premise edge.
-   */
-  public record AbsenceWitness(
-      String attribute,
-      String operator,
-      Object value) {
-
-    /**
-     * Short badge text for the trace graph, such as {@code "C absent"}.
-     */
-    public String label() {
-      return attribute + " absent";
-    }
   }
 
   /**
@@ -136,16 +118,16 @@ public class ConditionEvaluator {
     Fact best = null;
 
     for (Fact fact : facts) {
-      if (fact.getAttribute().equals(attribute) && compare(fact.getValue(), operator, value) && (best == null || fact.getLevel() > best.getLevel()))
+      if (fact.attribute().equals(attribute) && compare(fact.value(), operator, value) && (best == null || fact.level() > best.level()))
         best = fact;
     }
 
-    int depth = facts.stream().filter(f -> f.getAttribute().equals(attribute)).mapToInt(Fact::getLevel).max().orElse(0);
+    int depth = facts.stream().filter(f -> f.attribute().equals(attribute)).mapToInt(Fact::level).max().orElse(0);
 
     if (best == null)
       return new ProofResult(false, depth, List.of(), List.of());
 
-    return new ProofResult(true, depth, List.of(best.getFactId()), List.of());
+    return new ProofResult(true, depth, List.of(best.factId()), List.of());
   }
 
   /**

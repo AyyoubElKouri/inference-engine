@@ -42,7 +42,7 @@ public class InferenceEngine {
     while (factsChanged) {
       factsChanged = false;
       for (Rule rule : rules) {
-        ProofResult proof = evaluator.evaluateWithProvenance(rule.getCondition(), workingMemory.getFacts());
+        ProofResult proof = evaluator.evaluateWithProvenance(rule.getCondition(), asDomainFacts(workingMemory.getFacts()));
 
         if (proof.matched()) {
           for (Map<String, Object> conclusion : rule.getConclusions()) {
@@ -67,5 +67,13 @@ public class InferenceEngine {
         }
       }
     }
+  }
+
+  /**
+   * Adapts legacy mutable facts to the immutable domain records consumed by the evaluator.
+   */
+  private static List<com.ayyoub.inferenceengine.domain.Fact> asDomainFacts(List<Fact> facts) {
+    return facts.stream().map(fact -> new com.ayyoub.inferenceengine.domain.Fact(fact.getFactId(), fact.getAttribute(), fact.getOperator(),
+        fact.getValue(), fact.getConfidence(), fact.getDerivedBy(), fact.getLevel())).toList();
   }
 }
