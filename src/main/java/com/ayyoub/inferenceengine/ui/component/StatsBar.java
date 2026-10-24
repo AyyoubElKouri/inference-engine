@@ -39,13 +39,13 @@ public final class StatsBar extends HBox {
   }
 
   private static VBox statCell(String value, String label, String color) {
-    VBox cell = new VBox(4);
+    VBox cell = new VBox(2);
     cell.setAlignment(Pos.CENTER);
-    cell.setPadding(new Insets(18, 32, 18, 32));
+    cell.setPadding(new Insets(10, 32, 10, 32));
     HBox.setHgrow(cell, Priority.ALWAYS);
 
     Label number = new Label(value);
-    number.setFont(Font.font("System", FontWeight.BOLD, 22));
+    number.setFont(Font.font("System", FontWeight.BOLD, 19));
     number.setTextFill(Color.web(color));
 
     Label caption = new Label(label);
@@ -59,7 +59,7 @@ public final class StatsBar extends HBox {
   private static Region divider() {
     Region divider = new Region();
     divider.setPrefWidth(1);
-    divider.setMinHeight(50);
+    divider.setMinHeight(36);
     divider.setStyle("-fx-background-color: " + DesignTokens.BORDER + ";");
     return divider;
   }

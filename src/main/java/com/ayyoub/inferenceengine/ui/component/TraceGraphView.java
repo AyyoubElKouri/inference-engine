@@ -443,10 +443,13 @@ public class TraceGraphView {
     zoomGroup.scaleXProperty().bind(zoom);
     zoomGroup.scaleYProperty().bind(zoom);
 
-    ScrollPane scroll = new ScrollPane(zoomGroup);
+    StackPane centered = new StackPane(zoomGroup);
+    centered.setAlignment(Pos.TOP_CENTER);
+
+    ScrollPane scroll = new ScrollPane(centered);
     scroll.setPannable(true);
     scroll.setFitToWidth(true);
-    scroll.setFitToHeight(true);
+    scroll.setFitToHeight(false);
     scroll.setStyle("-fx-background: #F7F8FA; -fx-background-color: #F7F8FA;");
     VBox.setVgrow(scroll, Priority.ALWAYS);
 

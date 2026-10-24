@@ -167,8 +167,8 @@ public final class EngineUI {
     root.setStyle("-fx-background-color: " + DesignTokens.BG + ";");
     root.setTop(new TopBar(true, this::showInputPage));
 
-    VBox page = new VBox(20);
-    page.setPadding(new Insets(28, 36, 32, 36));
+    VBox page = new VBox(12);
+    page.setPadding(new Insets(20, 36, 24, 36));
     page.getChildren().add(new StatsBar(result.facts()));
 
     VBox graph = new TraceGraphView(result.facts(), result.derivations()).build();
