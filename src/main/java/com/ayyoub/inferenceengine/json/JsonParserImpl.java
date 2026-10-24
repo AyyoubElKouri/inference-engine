@@ -55,7 +55,12 @@ public final class JsonParserImpl implements JsonParser {
       if (input == null)
         throw new JsonParseException(classpathResource, new IOException("Resource not found"));
 
-      return mapper.readTree(input);
+      JsonNode root = mapper.readTree(input);
+
+      if (root == null)
+        throw new JsonParseException(classpathResource, new IOException("Empty JSON document"));
+
+      return root;
     } catch (JsonParseException error) {
       throw error;
     } catch (IOException error) {

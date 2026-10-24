@@ -48,6 +48,15 @@ class JsonParserTest {
   }
 
   @Test
+  void emptyJsonIsRejected() {
+    JsonParseException factsError = assertThrows(JsonParseException.class, () -> parser.parseFacts("/empty.json"));
+    JsonParseException rulesError = assertThrows(JsonParseException.class, () -> parser.parseRules("/empty.json"));
+
+    assertEquals("/empty.json", factsError.resource());
+    assertEquals("/empty.json", rulesError.resource());
+  }
+
+  @Test
   void rulesDocumentWithoutAWrapperIsRejected() {
     assertThrows(JsonParseException.class, () -> parser.parseRules("/facts.json"));
   }
