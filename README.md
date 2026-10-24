@@ -5,7 +5,7 @@
 ![Maven](https://img.shields.io/badge/Build-Maven-success.svg)
 ![Guice](https://img.shields.io/badge/DI-Google_Guice-green.svg)
 
-A rule-based inference engine (Expert System) developed in Java 21. This project uses the **forward chaining** mechanism to deduce new facts from a knowledge base (rules and initial facts) provided in JSON format.
+A rule-based inference engine (Expert System) developed in Java 21. This project uses the **forward chaining** mechanism to deduce new facts from a knowledge base of rules and a fact catalogue provided as JSON resources.
 
 ## Key Features
 
@@ -14,9 +14,9 @@ A rule-based inference engine (Expert System) developed in Java 21. This project
   * Standard operators (`=`, `!=`, `<`, `>`, `<=`, `>=`)
   * Logical groups (`all` / AND, `any` / OR, `not`, `xor`)
   * Quantifiers (`at_least`, `exactly`, `at_most`)
-* **Externalized Knowledge Base:** Rules and facts are dynamically loaded from JSON files (`facts.json`, `rules.json`).
-* **Graphical User Interface (UI):** Desktop application built with JavaFX.
-* **Dependency Injection:** Modular architecture powered by Google Guice.
+* **Externalized Knowledge Base:** Rules and facts are loaded from classpath JSON resources (`/facts.json`, `/rules.json`) through `json.JsonParser`.
+* **Graphical User Interface (UI):** Desktop application built with JavaFX, including a derivation trace graph.
+* **Dependency Injection:** Modular layered architecture wired by Google Guice.
 
 ## Tech Stack
 
@@ -25,7 +25,7 @@ A rule-based inference engine (Expert System) developed in Java 21. This project
 * **Build Tool:** Maven (use `./mvnw`, never bare `mvn`)
 * **Dependency Injection:** Google Guice 7.0.0
 * **JSON Parsing:** Jackson Databind 2.17.1
-* **Boilerplate:** Lombok 1.18.32
+* **Testing:** JUnit Jupiter 5.10.2
 * **Formatting:** Spotless 2.43.0 with `eclipse-formatter.xml` (2-space indent, 150-col)
 
 ## Installation & Execution
@@ -36,7 +36,7 @@ A rule-based inference engine (Expert System) developed in Java 21. This project
 
 ### Run the project
 
-Always run from the **repo root**: the readers load `src/main/resources/...` via relative paths, and running from another directory silently yields an empty rule base.
+Run the Maven wrapper from the **repo root**. Rule and fact resources are loaded from the classpath (`/rules.json`, `/facts.json`) through `json.JsonParser`, so the working directory no longer affects resource loading.
 
 ```bash
 ./mvnw javafx:run
@@ -53,11 +53,11 @@ java -jar target/inference-engine-0.0.1-SNAPSHOT.jar
 
 ## Configuration (JSON)
 
-The rules and initial facts are defined in the `src/main/resources/` directory. You can redefine the expert's business logic by directly modifying these files.
-- `facts.json`: top-level JSON array. Represents the Working Memory at startup.
-- `rules.json`: rules nested under `knowledge_base.rules`. Each rule has `id`, `condition`, `conclusions`, `priority` (conflict-resolution order, highest first), `confidence` and `explanation`.
+The rules and fact catalogue live in `src/main/resources/` and are loaded as classpath resources at startup. You can redefine the expert's business logic by modifying these files.
+- `facts.json`: top-level JSON array. Defines the fact catalogue that populates the UI inputs; selected facts become the Working Memory for a run.
+- `rules.json`: rules nested under `knowledge_base.rules`. Each rule has `id`, `condition`, `conclusions`, `priority` (conflict-resolution order, highest numeric value first; equal priorities keep file order), `confidence` and `explanation`.
 
-Condition DSL: leaf nodes use `attribute`/`operator`/`value`; groups use `all`/`any`/`not`/`xor`; quantifiers use `at_least`/`exactly`/`at_most` with `of`. Note: the legacy `InferenceEngine.forwardChaining` ignores `Rule.priority`.
+Condition DSL: leaf nodes use `attribute`/`operator`/`value`; groups use `all`/`any`/`not`/`xor`; quantifiers use `at_least`/`exactly`/`at_most` with `of`. The engine evaluates rules in descending priority order and keeps ties stable.
 
 ## Development commands
 
@@ -77,7 +77,7 @@ Condition DSL: leaf nodes use `attribute`/`operator`/`value`; groups use `all`/`
 ```
 
 ```bash
-# Build + spotless:check (fails on format drift)
+# Build, run tests, and check formatting (fails on format drift)
 ./mvnw verify
 ```
 
@@ -86,6 +86,8 @@ Formatting is enforced by `spotless:check` during `verify` using `eclipse-format
 ## Tests
 
 ```bash
-# Run tests (no test sources currently — succeeds with nothing to run)
+# Run the unit test suite
 ./mvnw test
 ```
+
+The suite currently contains 43 passing tests covering the condition evaluator, forward-chaining engine, knowledge base, working memory, JSON parsing, service facade, trace layout, and Guice wiring. UI components that require a JavaFX toolkit are verified manually with `./mvnw javafx:run`; headless/CI environments must not launch JavaFX.
