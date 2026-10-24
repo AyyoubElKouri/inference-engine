@@ -1,7 +1,8 @@
-package com.ayyoub.inferenceengine;
+package com.ayyoub.inferenceengine.ui.component;
 
 import com.ayyoub.inferenceengine.domain.AbsenceWitness;
-import com.ayyoub.inferenceengine.engine.Derivation;
+import com.ayyoub.inferenceengine.domain.Derivation;
+import com.ayyoub.inferenceengine.domain.Fact;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -18,7 +19,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
@@ -157,15 +157,6 @@ public class TraceGraphView {
   private static final double RULE_GAP = 48;
   private static final double PAD = 48;
 
-  private static final String SURFACE = "#FFFFFF";
-  private static final String BORDER = "#E5E7EB";
-  private static final String PRIMARY = "#1B4FD8";
-  private static final String TXT1 = "#0D0D14";
-  private static final String TXT2 = "#6B7280";
-  private static final String TXT3 = "#9CA3AF";
-  private static final String RULE_BG = "#7C3AED";
-  private static final String SUCCESS = "#059669";
-
   private final GraphModel model;
   private final Map<String, Fact> factsById = new HashMap<>();
   private final Map<String, List<Derivation>> derivationsByRule = new LinkedHashMap<>();
@@ -184,7 +175,7 @@ public class TraceGraphView {
     this.model = layout(facts, derivations);
 
     for (Fact fact : facts)
-      factsById.put(fact.getFactId(), fact);
+      factsById.put(fact.factId(), fact);
 
     for (Derivation derivation : derivations)
       derivationsByRule.computeIfAbsent(derivation.ruleId(), key -> new ArrayList<>()).add(derivation);
@@ -208,13 +199,13 @@ public class TraceGraphView {
     Map<Integer, List<Fact>> byLevel = new TreeMap<>();
 
     for (Fact fact : facts)
-      byLevel.computeIfAbsent(fact.getLevel(), key -> new ArrayList<>()).add(fact);
+      byLevel.computeIfAbsent(fact.level(), key -> new ArrayList<>()).add(fact);
 
     for (List<Fact> column : byLevel.values())
       column.sort((left, right) -> {
-        int compared = left.getAttribute().compareTo(right.getAttribute());
+        int compared = left.attribute().compareTo(right.attribute());
 
-        return compared != 0 ? compared : left.getFactId().compareTo(right.getFactId());
+        return compared != 0 ? compared : left.factId().compareTo(right.factId());
       });
 
     double maxColumnHeight = byLevel.values().stream().mapToDouble(column -> columnHeight(column.size())).max().orElse(0);
@@ -229,8 +220,8 @@ public class TraceGraphView {
 
       for (int index = 0; index < column.size(); index++) {
         Fact fact = column.get(index);
-        GraphNode node = new GraphNode(fact.getFactId(), NodeKind.FACT, fact.getAttribute(), fact.getOperator() + " " + fact.getValue(), level,
-            xForLevel(level), top + index * (FACT_H + V_GAP), FACT_W, FACT_H);
+        GraphNode node = new GraphNode(fact.factId(), NodeKind.FACT, fact.attribute(), fact.operator() + " " + fact.value(), level, xForLevel(level),
+            top + index * (FACT_H + V_GAP), FACT_W, FACT_H);
 
         nodes.add(node);
         nodesById.put(node.id(), node);
@@ -437,22 +428,22 @@ public class TraceGraphView {
     });
 
     zoomLabel = new Label(zoomText());
-    zoomLabel.setStyle("-fx-font-size: 12; -fx-text-fill: " + TXT2 + ";");
+    zoomLabel.setStyle("-fx-font-size: 12; -fx-text-fill: " + DesignTokens.TXT2 + ";");
 
-    Button zoomOut = smallButton("−");
+    Button zoomOut = new Button("−", Button.Variant.SECONDARY);
     zoomOut.setOnAction(event -> setZoom(zoom.get() / 1.2));
 
-    Button zoomIn = smallButton("+");
+    Button zoomIn = new Button("+", Button.Variant.SECONDARY);
     zoomIn.setOnAction(event -> setZoom(zoom.get() * 1.2));
 
-    Button reset = smallButton("Réinitialiser");
+    Button reset = new Button("Réinitialiser", Button.Variant.SECONDARY);
     reset.setOnAction(event -> {
       setZoom(1.0);
       clearSelection();
     });
 
     Label hint = new Label("Cliquer un nœud pour tracer sa chaîne de preuve ; cliquer le fond pour tout réafficher.");
-    hint.setStyle("-fx-font-size: 11; -fx-text-fill: " + TXT3 + ";");
+    hint.setStyle("-fx-font-size: 11; -fx-text-fill: " + DesignTokens.TXT3 + ";");
 
     Region spacer = new Region();
     HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -496,27 +487,27 @@ public class TraceGraphView {
    */
   private Node buildFactCard(GraphNode node) {
     Fact fact = factsById.get(node.id());
-    boolean initial = fact == null || fact.getDerivedBy() == null;
-    String accent = initial ? TXT2 : PRIMARY;
+    boolean initial = fact == null || fact.derivedBy() == null;
+    String accent = initial ? DesignTokens.TXT2 : DesignTokens.PRIMARY;
 
     VBox body = new VBox(4);
     body.setPadding(new Insets(10, 12, 10, 12));
 
     Label attr = new Label(node.title());
-    attr.setStyle("-fx-font-weight: bold; -fx-font-size: 12; -fx-text-fill: " + TXT1 + ";");
+    attr.setStyle("-fx-font-weight: bold; -fx-font-size: 12; -fx-text-fill: " + DesignTokens.TXT1 + ";");
 
     Label value = new Label(node.detail());
     value.setStyle("-fx-font-weight: bold; -fx-font-size: 12; -fx-text-fill: " + accent + ";");
 
-    Label origin = new Label(initial ? "Fait initial" : "↳ " + fact.getDerivedBy());
-    origin.setStyle("-fx-font-size: 10; -fx-text-fill: " + (initial ? TXT3 : TXT2) + ";");
+    Label origin = new Label(initial ? "Fait initial" : "↳ " + fact.derivedBy());
+    origin.setStyle("-fx-font-size: 10; -fx-text-fill: " + (initial ? DesignTokens.TXT3 : DesignTokens.TXT2) + ";");
 
     body.getChildren().addAll(attr, value, origin);
 
     HBox card = new HBox();
     card.setPrefSize(FACT_W, FACT_H);
     card.setMaxSize(FACT_W, FACT_H);
-    card.setStyle("-fx-background-color: " + SURFACE + "; -fx-border-color: " + BORDER + ";"
+    card.setStyle("-fx-background-color: " + DesignTokens.SURFACE + "; -fx-border-color: " + DesignTokens.BORDER + ";"
         + "-fx-border-radius: 9; -fx-background-radius: 9; -fx-cursor: hand;");
 
     Region strip = new Region();
@@ -528,7 +519,7 @@ public class TraceGraphView {
     card.getChildren().addAll(strip, body);
 
     if (fact != null)
-      card.setUserData(fact.getFactId());
+      card.setUserData(fact.factId());
 
     card.setOnMouseClicked(event -> {
       event.consume();
@@ -548,7 +539,7 @@ public class TraceGraphView {
     StackPane pill = new StackPane(label);
     pill.setPrefSize(RULE_W, RULE_H);
     pill.setMaxSize(RULE_W, RULE_H);
-    pill.setStyle("-fx-background-color: " + RULE_BG + "; -fx-background-radius: 20; -fx-cursor: hand;");
+    pill.setStyle("-fx-background-color: " + DesignTokens.RULE + "; -fx-background-radius: 20; -fx-cursor: hand;");
     pill.setEffect(new DropShadow(6, 0, 2, Color.rgb(124, 58, 237, 0.35)));
     Tooltip.install(pill, new Tooltip(tooltipFor(node.id())));
     pill.setOnMouseClicked(event -> {
@@ -567,8 +558,8 @@ public class TraceGraphView {
     badge.setAlignment(Pos.CENTER);
     badge.setPrefSize(BADGE_W, BADGE_H);
     badge.setMaxSize(BADGE_W, BADGE_H);
-    badge.setStyle("-fx-font-size: 11; -fx-text-fill: " + TXT2 + "; -fx-background-color: " + SURFACE + ";" + "-fx-border-color: " + TXT3
-        + "; -fx-border-style: dashed; -fx-border-radius: 13; -fx-background-radius: 13;");
+    badge.setStyle("-fx-font-size: 11; -fx-text-fill: " + DesignTokens.TXT2 + "; -fx-background-color: " + DesignTokens.SURFACE + ";"
+        + "-fx-border-color: " + DesignTokens.TXT3 + "; -fx-border-style: dashed; -fx-border-radius: 13; -fx-background-radius: 13;");
     badge.setMouseTransparent(true);
 
     return badge;
@@ -581,10 +572,10 @@ public class TraceGraphView {
     List<Derivation> group = derivationsByRule.getOrDefault(ruleId, List.of());
 
     List<String> premises = group.stream().flatMap(derivation -> derivation.premiseIds().stream()).distinct()
-        .map(id -> factsById.containsKey(id) ? factsById.get(id).getAttribute() : id).toList();
+        .map(id -> factsById.containsKey(id) ? factsById.get(id).attribute() : id).toList();
     List<String> absences = group.stream().flatMap(derivation -> derivation.absences().stream()).distinct().map(AbsenceWitness::label).toList();
     List<String> conclusions = group.stream().map(Derivation::conclusionId).distinct()
-        .map(id -> factsById.containsKey(id) ? factsById.get(id).getAttribute() : id).toList();
+        .map(id -> factsById.containsKey(id) ? factsById.get(id).attribute() : id).toList();
 
     StringBuilder tooltip = new StringBuilder(ruleId);
 
@@ -628,7 +619,7 @@ public class TraceGraphView {
         view.setOpacity(1.0);
 
         if (entry.getKey().equals(id))
-          view.setEffect(new DropShadow(12, Color.web(SUCCESS)));
+          view.setEffect(new DropShadow(12, Color.web(DesignTokens.SUCCESS)));
         else if (view instanceof StackPane)
           view.setEffect(new DropShadow(6, 0, 2, Color.rgb(124, 58, 237, 0.35)));
         else
@@ -680,17 +671,6 @@ public class TraceGraphView {
   }
 
   /**
-   * Small control button for the zoom bar.
-   */
-  private static Button smallButton(String text) {
-    Button button = new Button(text);
-    button.setStyle("-fx-background-color: " + SURFACE + "; -fx-text-fill: " + TXT1 + "; -fx-border-color: " + BORDER + ";"
-        + "-fx-border-radius: 7; -fx-background-radius: 7; -fx-padding: 4 12; -fx-cursor: hand;");
-
-    return button;
-  }
-
-  /**
    * One rendered edge: orthogonal polyline plus arrowhead, dimmable for highlighting.
    */
   private static class EdgeView {
@@ -716,9 +696,9 @@ public class TraceGraphView {
 
       if (edge.kind() == EdgeKind.ABSENCE) {
         line.getStrokeDashArray().addAll(7.0, 5.0);
-        line.setStroke(Color.web(TXT3));
+        line.setStroke(Color.web(DesignTokens.TXT3));
       } else if (edge.kind() == EdgeKind.CONCLUSION) {
-        line.setStroke(Color.web(PRIMARY));
+        line.setStroke(Color.web(DesignTokens.PRIMARY));
       } else {
         line.setStroke(Color.web("#6B87E8"));
       }

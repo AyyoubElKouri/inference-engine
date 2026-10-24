@@ -1,6 +1,7 @@
 package com.ayyoub.inferenceengine;
 
 import com.ayyoub.inferenceengine.config.AppModule;
+import com.ayyoub.inferenceengine.ui.component.TraceGraphView;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import java.util.*;
@@ -561,7 +562,8 @@ public class InferenceEngineUI extends Application {
 
     // Bipartite reasoning graph: fact nodes, rule nodes, and
     // premise → rule → conclusion edges with absence badges.
-    Node graphView = new TraceGraphView(allFacts, workingMemory.getDerivations()).build();
+    Node graphView = new TraceGraphView(allFacts.stream().map(InferenceEngineUI::toDomainFact).toList(),
+        workingMemory.getDerivations().stream().map(InferenceEngineUI::toDomainDerivation).toList()).build();
     VBox.setVgrow(graphView, Priority.ALWAYS);
     page.getChildren().add(graphView);
 
@@ -700,5 +702,21 @@ public class InferenceEngineUI extends Application {
     btn.setStyle("-fx-background-color: " + BG + "; -fx-text-fill: " + TXT1 + ";" + "-fx-border-color: " + BORDER
         + "; -fx-border-radius: 7; -fx-background-radius: 7;" + "-fx-padding: 6 14; -fx-cursor: hand;");
     return btn;
+  }
+
+  /**
+   * Adapts a legacy mutable fact to the immutable domain record used by the trace graph component.
+   */
+  private static com.ayyoub.inferenceengine.domain.Fact toDomainFact(Fact fact) {
+    return new com.ayyoub.inferenceengine.domain.Fact(fact.getFactId(), fact.getAttribute(), fact.getOperator(), fact.getValue(),
+        fact.getConfidence(), fact.getDerivedBy(), fact.getLevel());
+  }
+
+  /**
+   * Adapts a legacy derivation to the immutable domain record used by the trace graph component.
+   */
+  private static com.ayyoub.inferenceengine.domain.Derivation toDomainDerivation(com.ayyoub.inferenceengine.engine.Derivation derivation) {
+    return new com.ayyoub.inferenceengine.domain.Derivation(derivation.ruleId(), derivation.conclusionId(), derivation.premiseIds(),
+        derivation.absences());
   }
 }
