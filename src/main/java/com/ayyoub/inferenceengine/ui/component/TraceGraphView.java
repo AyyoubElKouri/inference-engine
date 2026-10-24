@@ -152,9 +152,10 @@ public class TraceGraphView {
   private static final double RULE_H = 40;
   private static final double BADGE_W = 108;
   private static final double BADGE_H = 26;
-  private static final double H_GAP = 200;
-  private static final double V_GAP = 16;
+  private static final double FACT_GAP = 24;
+  private static final double ROW_GAP = 120;
   private static final double RULE_GAP = 48;
+  private static final double BADGE_GAP = 12;
   private static final double PAD = 48;
 
   private final GraphModel model;
@@ -192,8 +193,8 @@ public class TraceGraphView {
    * Computes node positions and edges for facts and derivations, without JavaFX.
    *
    * <p>
-   * Facts stack in columns by level along x; each fired rule sits between its deepest premise layer and its shallowest conclusion layer at the mean
-   * height of its connected facts; absence badges stack above their rule node.
+   * Facts sit in rows by level along y, ordered top to bottom; each fired rule sits between its deepest premise row and its shallowest conclusion row
+   * at the mean horizontal center of its connected facts; absence badges sit beside their rule node.
    */
   public static GraphModel layout(List<Fact> facts, List<Derivation> derivations) {
     Map<Integer, List<Fact>> byLevel = new TreeMap<>();
@@ -201,27 +202,27 @@ public class TraceGraphView {
     for (Fact fact : facts)
       byLevel.computeIfAbsent(fact.level(), key -> new ArrayList<>()).add(fact);
 
-    for (List<Fact> column : byLevel.values())
-      column.sort((left, right) -> {
+    for (List<Fact> row : byLevel.values())
+      row.sort((left, right) -> {
         int compared = left.attribute().compareTo(right.attribute());
 
         return compared != 0 ? compared : left.factId().compareTo(right.factId());
       });
 
-    double maxColumnHeight = byLevel.values().stream().mapToDouble(column -> columnHeight(column.size())).max().orElse(0);
+    double maxRowWidth = byLevel.values().stream().mapToDouble(row -> rowWidth(row.size())).max().orElse(0);
 
     List<GraphNode> nodes = new ArrayList<>();
     Map<String, GraphNode> nodesById = new HashMap<>();
 
     for (Map.Entry<Integer, List<Fact>> entry : byLevel.entrySet()) {
       int level = entry.getKey();
-      List<Fact> column = entry.getValue();
-      double top = PAD + (maxColumnHeight - columnHeight(column.size())) / 2;
+      List<Fact> row = entry.getValue();
+      double left = PAD + (maxRowWidth - rowWidth(row.size())) / 2;
 
-      for (int index = 0; index < column.size(); index++) {
-        Fact fact = column.get(index);
-        GraphNode node = new GraphNode(fact.factId(), NodeKind.FACT, fact.attribute(), fact.operator() + " " + fact.value(), level, xForLevel(level),
-            top + index * (FACT_H + V_GAP), FACT_W, FACT_H);
+      for (int index = 0; index < row.size(); index++) {
+        Fact fact = row.get(index);
+        GraphNode node = new GraphNode(fact.factId(), NodeKind.FACT, fact.attribute(), fact.operator() + " " + fact.value(), level,
+            left + index * (FACT_W + FACT_GAP), yForLevel(level), FACT_W, FACT_H);
 
         nodes.add(node);
         nodesById.put(node.id(), node);
@@ -247,35 +248,46 @@ public class TraceGraphView {
       // A rule without premises (e.g. at_most holding vacuously) anchors to
       // the gap just before its conclusions so its badges stay clear of facts.
       int anchorLevel = premiseIds.isEmpty() ? Math.max(conclusionLevel - 1, 0) : premiseLevel;
-      double premiseRight = xForLevel(anchorLevel) + FACT_W;
-      double conclusionX = xForLevel(Math.max(conclusionLevel, anchorLevel));
-      double ruleX = premiseRight + Math.max(24, (conclusionX - premiseRight - RULE_W) / 2);
+      int conclusionRow = Math.max(conclusionLevel, anchorLevel + 1);
+      double premiseBottom = yForLevel(anchorLevel) + FACT_H;
+      double conclusionTop = yForLevel(conclusionRow);
 
       List<GraphNode> connected = new ArrayList<>();
       premiseIds.stream().map(nodesById::get).filter(node -> node != null).forEach(connected::add);
       conclusionIds.stream().map(nodesById::get).filter(node -> node != null).forEach(connected::add);
 
-      double ruleY = connected.isEmpty()
-          ? PAD + maxColumnHeight / 2
-          : connected.stream().mapToDouble(GraphNode::centerY).average().orElse(PAD) - RULE_H / 2;
+      double ruleX = connected.isEmpty()
+          ? PAD + maxRowWidth / 2 - RULE_W / 2
+          : connected.stream().mapToDouble(GraphNode::centerX).average().orElse(PAD) - RULE_W / 2;
+      double ruleY = premiseBottom + Math.max(BADGE_GAP, (conclusionTop - premiseBottom - RULE_H) / 2);
 
-      GraphNode ruleNode = new GraphNode(ruleId, NodeKind.RULE, ruleId, "", premiseLevel, ruleX, Math.max(PAD, ruleY), RULE_W, RULE_H);
+      GraphNode ruleNode = new GraphNode(ruleId, NodeKind.RULE, ruleId, "", premiseLevel, Math.max(PAD, ruleX), ruleY, RULE_W, RULE_H);
 
       ruleNodes.add(ruleNode);
     }
 
-    // De-collide rule nodes so stacked rules never overlap.
-    ruleNodes.sort((left, right) -> Double.compare(left.y(), right.y()));
+    // De-collide rules per row gap, reserving room for their absence badges.
+    Map<Long, List<GraphNode>> rulesByGap = new TreeMap<>();
 
-    double cursor = PAD;
+    for (GraphNode node : ruleNodes)
+      rulesByGap.computeIfAbsent(Math.round(node.y()), key -> new ArrayList<>()).add(node);
 
-    for (int index = 0; index < ruleNodes.size(); index++) {
-      GraphNode node = ruleNodes.get(index);
-      double placed = Math.max(node.y(), cursor);
-      ruleNodes.set(index,
-          new GraphNode(node.id(), node.kind(), node.title(), node.detail(), node.level(), node.x(), placed, node.width(), node.height()));
-      cursor = placed + RULE_H + RULE_GAP;
+    List<GraphNode> placedRules = new ArrayList<>();
+
+    for (List<GraphNode> gapRules : rulesByGap.values()) {
+      gapRules.sort((left, right) -> Double.compare(left.x(), right.x()));
+
+      double cursor = PAD;
+
+      for (GraphNode node : gapRules) {
+        double placed = Math.max(node.x(), cursor);
+        placedRules
+            .add(new GraphNode(node.id(), node.kind(), node.title(), node.detail(), node.level(), placed, node.y(), node.width(), node.height()));
+        cursor = placed + ruleBlockWidth(node.id(), grouped) + RULE_GAP;
+      }
     }
+
+    ruleNodes = placedRules;
 
     List<GraphEdge> edges = new ArrayList<>();
 
@@ -297,9 +309,8 @@ public class TraceGraphView {
 
       for (int index = 0; index < witnesses.size(); index++) {
         AbsenceWitness witness = witnesses.get(index);
-        double badgeX = ruleNode.x() + (RULE_W - BADGE_W) / 2;
-        double above = ruleNode.y() - (index + 1) * (BADGE_H + 10);
-        double badgeY = above >= 8 ? above : ruleNode.y() + RULE_H + 10 + index * (BADGE_H + 8);
+        double badgeX = ruleNode.x() + RULE_W + BADGE_GAP + index * (BADGE_W + 8);
+        double badgeY = ruleNode.y() + (RULE_H - BADGE_H) / 2;
         String badgeId = ruleNode.id() + "|absent|" + witness.attribute() + witness.operator() + witness.value();
         GraphNode badge = new GraphNode(badgeId, NodeKind.ABSENCE, witness.label(), "", ruleNode.level(), badgeX, badgeY, BADGE_W, BADGE_H);
 
@@ -316,24 +327,44 @@ public class TraceGraphView {
    * Orthogonal route for an edge, computed without JavaFX.
    *
    * <p>
-   * Premise and conclusion edges leave the source horizontally, travel vertically in the free gap between columns, and enter the target horizontally,
-   * so lines never cut through fact cards. Absence edges drop straight from the badge to its rule node.
+   * Premise and conclusion edges leave the source vertically, travel horizontally in the free gap between level rows, and enter the target
+   * vertically, so lines never cut through fact cards. Absence edges run straight from the badge to its rule node.
    */
   public static List<RoutePoint> routeEdge(GraphEdge edge, GraphNode source, GraphNode target) {
     if (edge.kind() == EdgeKind.ABSENCE)
-      return List.of(new RoutePoint(source.centerX(), source.y() + source.height()), new RoutePoint(target.centerX(), target.y()));
+      return routeAbsenceEdge(source, target);
 
-    double startX = source.x() + source.width();
-    double startY = source.centerY();
-    double endX = target.x();
-    double endY = target.centerY();
+    boolean downward = source.centerY() <= target.centerY();
+    double startX = source.centerX();
+    double startY = downward ? source.y() + source.height() : source.y();
+    double endX = target.centerX();
+    double endY = downward ? target.y() : target.y() + target.height();
 
-    if (Math.abs(endY - startY) < 1)
+    if (Math.abs(endX - startX) < 1)
       return List.of(new RoutePoint(startX, startY), new RoutePoint(endX, endY));
 
-    double midX = startX + (endX - startX) / 2;
+    double midY = startY + (endY - startY) / 2;
 
-    return List.of(new RoutePoint(startX, startY), new RoutePoint(midX, startY), new RoutePoint(midX, endY), new RoutePoint(endX, endY));
+    return List.of(new RoutePoint(startX, startY), new RoutePoint(startX, midY), new RoutePoint(endX, midY), new RoutePoint(endX, endY));
+  }
+
+  /**
+   * Straight horizontal or vertical route from an absence badge to its rule node.
+   */
+  private static List<RoutePoint> routeAbsenceEdge(GraphNode source, GraphNode target) {
+    if (Math.abs(source.centerY() - target.centerY()) < 1) {
+      boolean sourceIsRight = source.centerX() > target.centerX();
+      double startX = sourceIsRight ? source.x() : source.x() + source.width();
+      double endX = sourceIsRight ? target.x() + target.width() : target.x();
+
+      return List.of(new RoutePoint(startX, source.centerY()), new RoutePoint(endX, target.centerY()));
+    }
+
+    boolean downward = source.centerY() < target.centerY();
+    double startY = downward ? source.y() + source.height() : source.y();
+    double endY = downward ? target.y() : target.y() + target.height();
+
+    return List.of(new RoutePoint(source.centerX(), startY), new RoutePoint(target.centerX(), endY));
   }
 
   /**
@@ -459,17 +490,26 @@ public class TraceGraphView {
   }
 
   /**
-   * Horizontal origin of a level column.
+   * Vertical origin of a level row.
    */
-  private static double xForLevel(int level) {
-    return PAD + level * (FACT_W + H_GAP);
+  private static double yForLevel(int level) {
+    return PAD + level * (FACT_H + ROW_GAP);
   }
 
   /**
-   * Stacked height of a column holding count fact cards.
+   * Width of a row holding count fact cards.
    */
-  private static double columnHeight(int count) {
-    return count <= 0 ? 0 : count * FACT_H + (count - 1) * V_GAP;
+  private static double rowWidth(int count) {
+    return count <= 0 ? 0 : count * FACT_W + (count - 1) * FACT_GAP;
+  }
+
+  /**
+   * Horizontal room one fired rule needs, including its absence badges.
+   */
+  private static double ruleBlockWidth(String ruleId, Map<String, List<Derivation>> grouped) {
+    long badges = grouped.get(ruleId).stream().flatMap(derivation -> derivation.absences().stream()).distinct().count();
+
+    return RULE_W + (badges == 0 ? 0 : BADGE_GAP + badges * BADGE_W + (badges - 1) * 8);
   }
 
   /**

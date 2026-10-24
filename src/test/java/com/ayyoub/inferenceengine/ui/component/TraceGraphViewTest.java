@@ -58,7 +58,7 @@ class TraceGraphViewTest {
   }
 
   @Test
-  void layersFlowForwardWithoutOverlap() {
+  void layersFlowTopToBottomWithoutOverlap() {
     GraphModel model = smallRun();
     List<GraphNode> nodes = model.nodes();
 
@@ -66,7 +66,7 @@ class TraceGraphViewTest {
       GraphNode source = model.nodeById(edge.fromId());
       GraphNode target = model.nodeById(edge.toId());
 
-      assertTrue(target.x() >= source.x() || target.kind() == NodeKind.RULE || source.kind() == NodeKind.ABSENCE);
+      assertTrue(target.y() >= source.y() || source.kind() == NodeKind.ABSENCE);
     }
 
     for (int left = 0; left < nodes.size(); left++)
@@ -81,7 +81,23 @@ class TraceGraphViewTest {
   }
 
   @Test
-  void routesStayOrthogonalInTheColumnGap() {
+  void factsShareRowsAcrossLevels() {
+    GraphModel model = smallRun();
+    GraphNode first = model.nodeById("F1");
+    GraphNode second = model.nodeById("F2");
+    GraphNode firstConclusion = model.nodeById("F3");
+    GraphNode secondConclusion = model.nodeById("F4");
+    GraphNode rule = model.nodeById("R1");
+
+    assertEquals(first.y(), second.y());
+    assertEquals(firstConclusion.y(), secondConclusion.y());
+    assertTrue(first.x() < second.x());
+    assertTrue(first.y() < rule.y());
+    assertTrue(rule.y() < firstConclusion.y());
+  }
+
+  @Test
+  void routesStayOrthogonalInTheRowGap() {
     GraphModel model = smallRun();
 
     for (GraphEdge edge : model.edges()) {
@@ -92,8 +108,8 @@ class TraceGraphViewTest {
       GraphNode target = model.nodeById(edge.toId());
       List<RoutePoint> route = TraceGraphView.routeEdge(edge, source, target);
 
-      assertEquals(source.x() + source.width(), route.get(0).x());
-      assertEquals(target.x(), route.get(route.size() - 1).x());
+      assertEquals(source.y() + source.height(), route.get(0).y());
+      assertEquals(target.y(), route.get(route.size() - 1).y());
 
       for (int index = 1; index < route.size(); index++) {
         RoutePoint before = route.get(index - 1);
